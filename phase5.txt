@@ -1,0 +1,11 @@
+1. Real-Time Discussion Forum [6 Marks]
+Implement a real-time discussion forum on the Event Details page where registered participants can post messages, ask questions, and interact. Organizers can moderate the forum
+(delete/pin messages), post announcements, and respond to queries. Include notification
+system for new messages, message threading support, and ability to react to messages.
+
+2. Organizer Password Reset Workflow [6 Marks]
+Implement a complete password reset system for organizers. Organizers can request password
+reset from the Admin; Admin can view all password reset requests with details (club name,
+date, reason); Admin can approve or reject requests with comments; upon approval, system
+auto-generates new password which Admin receives and shares with the organizer; includes
+request status tracking (Pending/Approved/Rejected) and password reset history.

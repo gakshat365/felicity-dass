@@ -1,0 +1,160 @@
+/* ============================================
+   PROFILE COMPLETENESS BANNER
+   GitHub Dark Theme
+   ============================================ */
+
+.profile-banner {
+    background-color: #161b22;
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-banner.red {
+    border-color: #f85149;
+    background-color: rgba(248, 81, 73, 0.05);
+}
+
+.profile-banner.yellow {
+    border-color: #d29922;
+    background-color: rgba(210, 153, 34, 0.05);
+}
+
+.profile-banner.green {
+    border-color: #3fb950;
+    background-color: rgba(63, 185, 80, 0.05);
+}
+
+.banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.banner-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.progress-circle {
+    flex-shrink: 0;
+}
+
+.profile-banner.red .progress-circle {
+    color: #f85149;
+}
+
+.profile-banner.yellow .progress-circle {
+    color: #d29922;
+}
+
+.profile-banner.green .progress-circle {
+    color: #3fb950;
+}
+
+.banner-text {
+    flex: 1;
+}
+
+.banner-text h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 4px;
+}
+
+.banner-text p {
+    font-size: 13px;
+    color: #8b949e;
+    margin: 0;
+}
+
+.missing-fields {
+    display: block;
+    font-size: 12px;
+    color: #6e7681;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.banner-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background-color: #58a6ff;
+    color: #000;
+    border-color: #58a6ff;
+}
+
+.btn-primary:hover {
+    background-color: #79c0ff;
+    border-color: #79c0ff;
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: #8b949e;
+    border-color: transparent;
+}
+
+.btn-ghost:hover {
+    color: #c9d1d9;
+    background-color: #21262d;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .banner-left {
+        width: 100%;
+    }
+
+    .banner-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        flex: 1;
+    }
+}

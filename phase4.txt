@@ -1,0 +1,15 @@
+2. Merchandise Payment Approval Workflow [8 Marks]
+Implement a payment verification system for merchandise purchases. Users must upload a
+payment proof (image) after placing an order, upon which the order enters a Pending Ap
+proval state. Organizers can view a separate tab with all orders showing uploaded payment
+proofs, current status (Pending/Approved/Rejected), and actions to approve or reject pay
+ments. On approval, the order is marked Successful, stock is decremented, a ticket with QR
+is generated, and a confirmation email is sent. No QR is generated while the order is in
+pending or rejected state.
+3. QR Scanner & Attendance Tracking [8 Marks]
+Implement a built-in QR code scanner for organizers to validate tickets and track attendance
+during events. Features include: scanning participant QR codes (using device camera or
+f
+ile upload), marking attendance with timestamp, rejecting duplicate scans, live attendance
+dashboard showing scanned vs. not-yet-scanned participants, export attendance reports as
+CSV, and manual override option for exceptional cases with audit logging.

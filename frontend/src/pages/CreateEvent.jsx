@@ -1,0 +1,512 @@
+import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import axios from '../api/axios';
+import toast from 'react-hot-toast';
+import FormBuilder from '../components/FormBuilder';
+import './CreateEvent.css';
+
+const CreateEvent = () => {
+    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({
+        // Step 1: Basic Info
+        name: '',
+        description: '',
+        type: 'normal',
+
+        // Step 2: Dates & Eligibility
+        startDate: '',
+        endDate: '',
+        registrationDeadline: '',
+        eligibility: 'All',
+
+        // Step 3: Pricing & Limits
+        registrationFee: 0,
+        registrationLimit: '',
+
+        // Merchandise specific
+        stock: '',
+        merchandiseDetails: {
+            sizes: [],
+            colors: [],
+            variants: []
+        },
+
+        // Step 4: Custom Form (for normal events)
+        customForm: [],
+
+        // Step 5: Additional
+        tags: [],
+        upiId: ''
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [tagInput, setTagInput] = useState('');
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleMerchandiseChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            merchandiseDetails: {
+                ...prev.merchandiseDetails,
+                [field]: value.split(',').map(item => item.trim()).filter(Boolean)
+            }
+        }));
+    };
+
+    const addTag = () => {
+        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                tags: [...prev.tags, tagInput.trim()]
+            }));
+            setTagInput('');
+        }
+    };
+
+    const removeTag = (tagToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            tags: prev.tags.filter(tag => tag !== tagToRemove)
+        }));
+    };
+
+    const handleFormBuilderChange = (fields) => {
+        setFormData(prev => ({
+            ...prev,
+            customForm: fields
+        }));
+    };
+
+    const validateStep = (currentStep) => {
+        switch (currentStep) {
+            case 1:
+                if (!formData.name.trim()) {
+                    toast.error('Event name is required');
+                    return false;
+                }
+                if (!formData.description.trim()) {
+                    toast.error('Event description is required');
+                    return false;
+                }
+                return true;
+
+            case 2:
+                if (!formData.startDate) {
+                    toast.error('Start date is required');
+                    return false;
+                }
+                if (!formData.endDate) {
+                    toast.error('End date is required');
+                    return false;
+                }
+                if (!formData.registrationDeadline) {
+                    toast.error('Registration deadline is required');
+                    return false;
+                }
+                if (new Date(formData.endDate) < new Date(formData.startDate)) {
+                    toast.error('End date must be after start date');
+                    return false;
+                }
+                if (new Date(formData.registrationDeadline) > new Date(formData.startDate)) {
+                    toast.error('Registration deadline must be before start date');
+                    return false;
+                }
+                return true;
+
+            case 3:
+                if (formData.type === 'merchandise' && !formData.stock) {
+                    toast.error('Stock is required for merchandise');
+                    return false;
+                }
+                return true;
+
+            default:
+                return true;
+        }
+    };
+
+    const nextStep = () => {
+        if (validateStep(step)) {
+            setStep(prev => Math.min(prev + 1, 5));
+        }
+    };
+
+    const prevStep = () => {
+        setStep(prev => Math.max(prev - 1, 1));
+    };
+
+    const handleSubmit = async (status = 'draft') => {
+        if (!validateStep(step)) return;
+
+        setLoading(true);
+        try {
+            const eventData = {
+                ...formData,
+                status,
+                registrationFee: parseFloat(formData.registrationFee) || 0,
+                registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
+                stock: formData.stock ? parseInt(formData.stock) : null
+            };
+
+            const response = await axios.post('/events', eventData);
+
+            toast.success(`Event ${status === 'draft' ? 'saved as draft' : 'published'} successfully!`);
+            navigate(`/events/${response.data._id}`);
+        } catch (error) {
+            console.error('Create event error:', error);
+            toast.error(error.response?.data?.message || 'Failed to create event');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderStepIndicator = () => (
+        <div className="step-indicator">
+            {[1, 2, 3, 4, 5].map(num => (
+                <div
+                    key={num}
+                    className={`step-item ${step === num ? 'active' : ''} ${step > num ? 'completed' : ''}`}
+                >
+                    <div className="step-number">{num}</div>
+                    <div className="step-label">
+                        {num === 1 && 'Basic Info'}
+                        {num === 2 && 'Dates'}
+                        {num === 3 && 'Pricing'}
+                        {num === 4 && 'Form'}
+                        {num === 5 && 'Review'}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
+    return (
+        <div className="create-event-container">
+            <header className="create-header">
+                <div className="header-content">
+                    <h1>Create New Event</h1>
+                    <button onClick={() => navigate('/dashboard')} className="btn btn-secondary btn-sm">
+                        Cancel
+                    </button>
+                </div>
+            </header>
+
+            <div className="create-main">
+                {renderStepIndicator()}
+
+                <div className="form-container">
+                    {/* Step 1: Basic Info */}
+                    {step === 1 && (
+                        <div className="form-step">
+                            <h2>Basic Information</h2>
+
+                            <div className="form-group">
+                                <label>Event Name *</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="Enter event name"
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Description *</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    placeholder="Describe your event"
+                                    rows={6}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Event Type *</label>
+                                <select name="type" value={formData.type} onChange={handleChange}>
+                                    <option value="normal">Normal Event</option>
+                                    <option value="merchandise">Merchandise</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Dates & Eligibility */}
+                    {step === 2 && (
+                        <div className="form-step">
+                            <h2>Dates & Eligibility</h2>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Start Date *</label>
+                                    <input
+                                        type="datetime-local"
+                                        name="startDate"
+                                        value={formData.startDate}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>End Date *</label>
+                                    <input
+                                        type="datetime-local"
+                                        name="endDate"
+                                        value={formData.endDate}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Registration Deadline *</label>
+                                <input
+                                    type="datetime-local"
+                                    name="registrationDeadline"
+                                    value={formData.registrationDeadline}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Eligibility *</label>
+                                <select name="eligibility" value={formData.eligibility} onChange={handleChange}>
+                                    <option value="All">All</option>
+                                    <option value="IIIT Students">IIIT Students Only</option>
+                                    <option value="IIIT Community">IIIT Community</option>
+                                    <option value="Outside IIIT">Outside IIIT</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Pricing & Limits */}
+                    {step === 3 && (
+                        <div className="form-step">
+                            <h2>Pricing & Limits</h2>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Registration Fee (₹)</label>
+                                    <input
+                                        type="number"
+                                        name="registrationFee"
+                                        value={formData.registrationFee}
+                                        onChange={handleChange}
+                                        min="0"
+                                        placeholder="0"
+                                    />
+                                    <small>Leave as 0 for free events</small>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Registration Limit</label>
+                                    <input
+                                        type="number"
+                                        name="registrationLimit"
+                                        value={formData.registrationLimit}
+                                        onChange={handleChange}
+                                        min="1"
+                                        placeholder="No limit"
+                                    />
+                                    <small>Leave empty for unlimited</small>
+                                </div>
+                            </div>
+
+                            {formData.type === 'merchandise' && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Stock *</label>
+                                        <input
+                                            type="number"
+                                            name="stock"
+                                            value={formData.stock}
+                                            onChange={handleChange}
+                                            min="1"
+                                            placeholder="Available stock"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Sizes (comma-separated)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="S, M, L, XL"
+                                            onChange={(e) => handleMerchandiseChange('sizes', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Colors (comma-separated)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Black, White, Blue"
+                                            onChange={(e) => handleMerchandiseChange('colors', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Variants (comma-separated)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Regular, Premium"
+                                            onChange={(e) => handleMerchandiseChange('variants', e.target.value)}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="form-group">
+                                <label>UPI ID (for payments)</label>
+                                <input
+                                    type="text"
+                                    name="upiId"
+                                    value={formData.upiId}
+                                    onChange={handleChange}
+                                    placeholder="yourname@paytm"
+                                />
+                                <small>Participants will use this for payment</small>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 4: Custom Form Builder */}
+                    {step === 4 && (
+                        <div className="form-step">
+                            <h2>{formData.type === 'normal' ? 'Registration Form' : 'Additional Details'}</h2>
+
+                            {formData.type === 'normal' ? (
+                                <FormBuilder
+                                    fields={formData.customForm}
+                                    onChange={handleFormBuilderChange}
+                                />
+                            ) : (
+                                <div className="info-box">
+                                    <p>Merchandise events don't require a custom registration form.</p>
+                                    <p>Participants will select size, color, and variant during purchase.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Step 5: Review & Publish */}
+                    {step === 5 && (
+                        <div className="form-step">
+                            <h2>Review & Publish</h2>
+
+                            <div className="review-section">
+                                <h3>Event Summary</h3>
+                                <div className="review-grid">
+                                    <div className="review-item">
+                                        <span className="review-label">Name:</span>
+                                        <span className="review-value">{formData.name}</span>
+                                    </div>
+                                    <div className="review-item">
+                                        <span className="review-label">Type:</span>
+                                        <span className="review-value">{formData.type}</span>
+                                    </div>
+                                    <div className="review-item">
+                                        <span className="review-label">Start Date:</span>
+                                        <span className="review-value">
+                                            {new Date(formData.startDate).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="review-item">
+                                        <span className="review-label">Fee:</span>
+                                        <span className="review-value">
+                                            {formData.registrationFee > 0 ? `₹${formData.registrationFee}` : 'Free'}
+                                        </span>
+                                    </div>
+                                    {formData.type === 'normal' && (
+                                        <div className="review-item">
+                                            <span className="review-label">Form Fields:</span>
+                                            <span className="review-value">{formData.customForm.length}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tags</label>
+                                <div className="tag-input-container">
+                                    <input
+                                        type="text"
+                                        value={tagInput}
+                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                                        placeholder="Add tags (press Enter)"
+                                    />
+                                    <button type="button" onClick={addTag} className="btn btn-secondary btn-sm">
+                                        Add
+                                    </button>
+                                </div>
+                                <div className="tags-display">
+                                    {formData.tags.map(tag => (
+                                        <span key={tag} className="tag">
+                                            {tag}
+                                            <button onClick={() => removeTag(tag)}>&times;</button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="form-actions">
+                        {step > 1 && (
+                            <button onClick={prevStep} className="btn btn-secondary">
+                                Previous
+                            </button>
+                        )}
+
+                        <div className="action-right">
+                            {step < 5 ? (
+                                <button onClick={nextStep} className="btn btn-primary">
+                                    Next
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => handleSubmit('draft')}
+                                        className="btn btn-secondary"
+                                        disabled={loading}
+                                    >
+                                        Save as Draft
+                                    </button>
+                                    <button
+                                        onClick={() => handleSubmit('published')}
+                                        className="btn btn-primary"
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Publishing...' : 'Publish Event'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CreateEvent;

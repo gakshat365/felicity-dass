@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Design System - Dark Theme</title>
+    <link rel="stylesheet" href="ui-demo.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Event Management System</h1>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link">Events</a>
+                <a href="#" class="nav-link">Profile</a>
+                <button class="btn btn-secondary btn-sm">Logout</button>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Typography Section -->
+            <section class="section">
+                <h2 class="section-title">Typography</h2>
+                <div class="content-box">
+                    <h1>Heading 1</h1>
+                    <h2>Heading 2</h2>
+                    <h3>Heading 3</h3>
+                    <h4>Heading 4</h4>
+                    <p class="text-primary">Primary text color - Main content</p>
+                    <p class="text-secondary">Secondary text color - Muted content</p>
+                    <p class="text-accent">Accent text color - Highlights</p>
+                    <p class="text-success">Success text - Confirmations</p>
+                    <p class="text-error">Error text - Warnings and errors</p>
+                </div>
+            </section>
+
+            <!-- Buttons Section -->
+            <section class="section">
+                <h2 class="section-title">Buttons</h2>
+                <div class="content-box">
+                    <div class="button-group">
+                        <button class="btn btn-primary">Primary Button</button>
+                        <button class="btn btn-secondary">Secondary Button</button>
+                        <button class="btn btn-accent">Accent Button</button>
+                        <button class="btn btn-danger">Danger Button</button>
+                        <button class="btn btn-primary" disabled>Disabled Button</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary btn-sm">Small</button>
+                        <button class="btn btn-primary">Medium</button>
+                        <button class="btn btn-primary btn-lg">Large</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-outline">Outline Button</button>
+                        <button class="btn btn-ghost">Ghost Button</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Form Elements Section -->
+            <section class="section">
+                <h2 class="section-title">Form Elements</h2>
+                <div class="content-box">
+                    <form class="form">
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-input" placeholder="user@iiit.ac.in">
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" class="form-input" placeholder="Enter password">
+                        </div>
+                        <div class="form-group">
+                            <label for="role" class="form-label">User Role</label>
+                            <select id="role" class="form-select">
+                                <option>Select role</option>
+                                <option>Participant</option>
+                                <option>Organizer</option>
+                                <option>Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea id="bio" class="form-textarea" rows="4"
+                                placeholder="Tell us about yourself..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox">
+                                <span>I agree to the terms and conditions</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Cards Section -->
+            <section class="section">
+                <h2 class="section-title">Cards</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Event Card</h3>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <div class="card-body">
+                            <p>This is a sample event card with some description text.</p>
+                            <div class="card-meta">
+                                <span class="meta-item">📅 Feb 20, 2026</span>
+                                <span class="meta-item">👥 150 participants</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm">Register</button>
+                            <button class="btn btn-ghost btn-sm">Details</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Team Registration</h3>
+                            <span class="badge badge-warning">Pending</span>
+                        </div>
+                        <div class="card-body">
+                            <p>Your team registration is awaiting approval from organizers.</p>
+                            <div class="card-meta">
+                                <span class="meta-item">Team: Code Warriors</span>
+                                <span class="meta-item">Members: 4/5</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-secondary btn-sm">Edit</button>
+                            <button class="btn btn-ghost btn-sm">Cancel</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Workshop</h3>
+                            <span class="badge badge-error">Closed</span>
+                        </div>
+                        <div class="card-body">
+                            <p>Registration for this workshop has been closed.</p>
+                            <div class="card-meta">
+                                <span class="meta-item">Capacity: 50/50</span>
+                                <span class="meta-item">Waitlist: 12</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-secondary btn-sm" disabled>Full</button>
+                            <button class="btn btn-ghost btn-sm">Join Waitlist</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section class="section">
+                <h2 class="section-title">Tables</h2>
+                <div class="content-box">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Organizer</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Hackathon 2026</td>
+                                <td>Feb 20, 2026</td>
+                                <td>Tech Club</td>
+                                <td><span class="badge badge-success">Active</span></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-sm">View</button>
+                                    <button class="btn btn-ghost btn-sm">Edit</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Cultural Fest</td>
+                                <td>Mar 5, 2026</td>
+                                <td>Cultural Council</td>
+                                <td><span class="badge badge-warning">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-sm">View</button>
+                                    <button class="btn btn-ghost btn-sm">Edit</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Workshop Series</td>
+                                <td>Jan 15, 2026</td>
+                                <td>Research Council</td>
+                                <td><span class="badge badge-error">Closed</span></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-sm">View</button>
+                                    <button class="btn btn-ghost btn-sm">Edit</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="section">
+                <h2 class="section-title">Alerts & Messages</h2>
+                <div class="content-box">
+                    <div class="alert alert-info">
+                        <strong>Info:</strong> Your profile has been updated successfully.
+                    </div>
+                    <div class="alert alert-success">
+                        <strong>Success:</strong> Event registration completed!
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> Registration deadline is approaching.
+                    </div>
+                    <div class="alert alert-error">
+                        <strong>Error:</strong> Failed to submit form. Please try again.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Badges & Tags Section -->
+            <section class="section">
+                <h2 class="section-title">Badges & Tags</h2>
+                <div class="content-box">
+                    <div class="badge-group">
+                        <span class="badge badge-primary">Primary</span>
+                        <span class="badge badge-secondary">Secondary</span>
+                        <span class="badge badge-success">Success</span>
+                        <span class="badge badge-warning">Warning</span>
+                        <span class="badge badge-error">Error</span>
+                        <span class="badge badge-info">Info</span>
+                    </div>
+                    <div class="badge-group">
+                        <span class="tag">React</span>
+                        <span class="tag">Node.js</span>
+                        <span class="tag">MongoDB</span>
+                        <span class="tag">Express</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading States Section -->
+            <section class="section">
+                <h2 class="section-title">Loading States</h2>
+                <div class="content-box">
+                    <div class="spinner"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                    <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                </div>
+            </section>
+
+            <!-- Code Block Section -->
+            <section class="section">
+                <h2 class="section-title">Code Block</h2>
+                <div class="content-box">
+                    <pre class="code-block"><code>{
+  "email": "user@iiit.ac.in",
+  "role": "participant",
+  "status": "active"
+}</code></pre>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 IIIT Event Management System. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

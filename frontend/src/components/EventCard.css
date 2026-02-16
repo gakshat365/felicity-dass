@@ -1,0 +1,189 @@
+/* ============================================
+   EVENT CARD COMPONENT
+   GitHub Dark Theme
+   ============================================ */
+
+.event-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    border-color: #58a6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ending-soon-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #d29922;
+    color: #000;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.event-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.event-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin: 0;
+    flex: 1;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.status-gray {
+    background-color: rgba(139, 148, 158, 0.2);
+    color: #8b949e;
+}
+
+.status-blue {
+    background-color: rgba(88, 166, 255, 0.2);
+    color: #58a6ff;
+}
+
+.status-green {
+    background-color: rgba(63, 185, 80, 0.2);
+    color: #3fb950;
+}
+
+.status-purple {
+    background-color: rgba(163, 113, 247, 0.2);
+    color: #a371f7;
+}
+
+.status-red {
+    background-color: rgba(248, 81, 73, 0.2);
+    color: #f85149;
+}
+
+.event-description {
+    font-size: 14px;
+    color: #8b949e;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.event-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.meta-item {
+    font-size: 13px;
+}
+
+.meta-label {
+    color: #6e7681;
+    margin-right: 4px;
+}
+
+.meta-value {
+    color: #c9d1d9;
+    font-weight: 500;
+}
+
+.event-dates {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.date-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #8b949e;
+}
+
+.date-icon {
+    font-size: 14px;
+}
+
+.event-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.event-tag {
+    background-color: #21262d;
+    color: #58a6ff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.event-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #30363d;
+}
+
+.event-stats {
+    font-size: 12px;
+    color: #6e7681;
+}
+
+.event-fee {
+    font-size: 16px;
+    font-weight: 600;
+    color: #3fb950;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .event-card {
+        padding: 16px;
+    }
+
+    .event-title {
+        font-size: 16px;
+    }
+
+    .event-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .event-dates {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .event-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

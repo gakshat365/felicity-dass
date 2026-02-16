@@ -1,0 +1,158 @@
+.navbar {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 0 2rem;
+}
+
+.navbar-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #f0f6fc;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.logo-icon {
+    font-size: 1.5rem;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: #8b949e;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+}
+
+.nav-link:hover {
+    color: #f0f6fc;
+    background: #21262d;
+}
+
+.nav-link.active {
+    color: #f0f6fc;
+    background: #21262d;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #f85149;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 1rem;
+}
+
+.logout-btn:hover {
+    background: #f85149;
+    color: #ffffff;
+    border-color: #f85149;
+}
+
+.nav-toggle {
+    display: none;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 1rem;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 64px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 64px);
+        background: #0d1117;
+        flex-direction: column;
+        padding: 2rem;
+        transition: 0.3s;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .nav-menu.open {
+        left: 0;
+    }
+
+    .logout-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+.hamburger {
+    width: 24px;
+    height: 2px;
+    background: #f0f6fc;
+    position: relative;
+    transition: 0.3s;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: #f0f6fc;
+    transition: 0.3s;
+}
+
+.hamburger::before {
+    top: -8px;
+}
+
+.hamburger::after {
+    top: 8px;
+}
+
+.hamburger.active {
+    background: transparent;
+}
+
+.hamburger.active::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.hamburger.active::after {
+    transform: rotate(-45deg);
+    top: 0;
+}

@@ -1,0 +1,393 @@
+/* ============================================
+   PROFILE PAGE STYLES
+   GitHub Dark Theme
+   ============================================ */
+
+.profile-container {
+    min-height: 100vh;
+    background-color: #0d1117;
+}
+
+.profile-header {
+    background-color: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 24px;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-content h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #c9d1d9;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.profile-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+/* Completion Widget */
+.completion-widget {
+    background-color: #161b22;
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.completion-widget.red {
+    border-color: #f85149;
+}
+
+.completion-widget.yellow {
+    border-color: #d29922;
+}
+
+.completion-widget.green {
+    border-color: #3fb950;
+}
+
+.completion-circle {
+    flex-shrink: 0;
+}
+
+.completion-widget.red .completion-circle {
+    color: #f85149;
+}
+
+.completion-widget.yellow .completion-circle {
+    color: #d29922;
+}
+
+.completion-widget.green .completion-circle {
+    color: #3fb950;
+}
+
+.completion-text h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 4px;
+}
+
+.completion-text p {
+    font-size: 14px;
+    color: #8b949e;
+}
+
+/* Profile Card */
+.profile-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 32px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #30363d;
+}
+
+.card-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #c9d1d9;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #c9d1d9;
+    margin-bottom: 6px;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #c9d1d9;
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.form-input:disabled,
+.form-textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.helper-text {
+    display: block;
+    font-size: 12px;
+    color: #6e7681;
+    margin-top: 4px;
+}
+
+/* Badge Display */
+.badge-display {
+    padding: 8px 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 12px;
+}
+
+.badge-info {
+    background-color: rgba(88, 166, 255, 0.2);
+    color: #58a6ff;
+}
+
+.badge-warning {
+    background-color: rgba(210, 153, 34, 0.2);
+    color: #d29922;
+}
+
+.badge-club {
+    background-color: rgba(88, 166, 255, 0.2);
+    color: #58a6ff;
+}
+
+.badge-council {
+    background-color: rgba(210, 153, 34, 0.2);
+    color: #d29922;
+}
+
+.badge-fest-team {
+    background-color: rgba(163, 113, 247, 0.2);
+    color: #a371f7;
+}
+
+/* Interest Grid */
+.interest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.interest-card {
+    background-color: #0d1117;
+    border: 2px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.interest-card:not(.disabled):hover {
+    border-color: #58a6ff;
+    transform: translateY(-2px);
+}
+
+.interest-card.selected {
+    border-color: #58a6ff;
+    background-color: rgba(88, 166, 255, 0.1);
+}
+
+.interest-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.interest-icon {
+    font-size: 28px;
+}
+
+.interest-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #c9d1d9;
+}
+
+/* Following List */
+.following-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.following-item {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.following-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.following-info h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #c9d1d9;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #30363d;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #58a6ff;
+    color: #000;
+    border-color: #58a6ff;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #79c0ff;
+    border-color: #79c0ff;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border-color: #30363d;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #30363d;
+    border-color: #30363d;
+}
+
+.btn-sm {
+    padding: 4px 12px;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-header {
+        padding: 12px 16px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .profile-main {
+        padding: 24px 16px;
+    }
+
+    .completion-widget {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-card {
+        padding: 24px 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .interest-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

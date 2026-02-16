@@ -1,0 +1,168 @@
+.browse-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.page-header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #f0f6fc;
+}
+
+.page-header p {
+    color: #8b949e;
+}
+
+/* Trending Section */
+.trending-section {
+    margin-bottom: 3rem;
+}
+
+.trending-section h2 {
+    color: #f0f6fc;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.trending-scroll {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+}
+
+.trending-card {
+    min-width: 280px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    padding: 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.trending-card:hover {
+    transform: translateY(-4px);
+    border-color: #58a6ff;
+}
+
+.trending-badge {
+    position: absolute;
+    top: -10px;
+    right: 15px;
+    background: #238636;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.trending-card h4 {
+    color: #f0f6fc;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.trending-card p {
+    color: #8b949e;
+    font-size: 0.9rem;
+}
+
+/* Layout */
+.browse-layout {
+    display: flex;
+    gap: 2rem;
+}
+
+.filters-sidebar {
+    width: 280px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 84px;
+}
+
+.filters-sidebar h3 {
+    color: #f0f6fc;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 0.5rem;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group label {
+    display: block;
+    color: #8b949e;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #f0f6fc;
+    padding: 0.6rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.events-main {
+    flex: 1;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 4rem;
+    background: #161b22;
+    border-radius: 12px;
+    border: 1px dashed #30363d;
+}
+
+.no-results h3 {
+    color: #f0f6fc;
+    margin-bottom: 1rem;
+}
+
+.no-results button {
+    background: #21262d;
+    color: #58a6ff;
+    border: 1px solid #30363d;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+@media (max-width: 992px) {
+    .browse-layout {
+        flex-direction: column;
+    }
+
+    .filters-sidebar {
+        width: 100%;
+        position: static;
+    }
+}

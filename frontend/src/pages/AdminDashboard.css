@@ -1,0 +1,245 @@
+/* Admin Dashboard Premium Styles */
+.admin-dashboard-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.admin-header {
+    margin-bottom: 2.5rem;
+}
+
+.header-subtitle {
+    color: #8b949e;
+    margin-top: 0.5rem;
+}
+
+/* Tabs */
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #30363d;
+    overflow-x: auto;
+    padding-bottom: 1px;
+}
+
+.tab {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    font-size: 0.95rem;
+}
+
+.tab:hover {
+    color: #f0f6fc;
+}
+
+.tab-active {
+    color: #f0f6fc;
+}
+
+.tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #f78166;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-card.highlight {
+    border-color: #f85149;
+    background: rgba(248, 81, 73, 0.05);
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f0f6fc;
+}
+
+.stat-label {
+    color: #8b949e;
+    font-size: 0.85rem;
+}
+
+/* Common Table Styles */
+.table-wrapper,
+.organizers-table,
+.events-table {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #0d1117;
+    padding: 1rem;
+    text-align: left;
+    color: #8b949e;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+td {
+    padding: 1rem;
+    border-top: 1px solid #30363d;
+    color: #c9d1d9;
+    font-size: 0.95rem;
+}
+
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-active,
+.status-approved,
+.status-published {
+    background: rgba(63, 185, 80, 0.1);
+    color: #3fb950;
+}
+
+.status-pending {
+    background: rgba(210, 153, 34, 0.1);
+    color: #d29922;
+}
+
+.status-suspended,
+.status-rejected {
+    background: rgba(248, 81, 73, 0.1);
+    color: #f85149;
+}
+
+/* Discovery / Cards */
+.organizers-grid,
+.requests-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.organizer-card,
+.request-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.request-card.status-pending {
+    border-left: 4px solid #f2cc60;
+}
+
+.request-card.status-approved {
+    border-left: 4px solid #3fb950;
+    opacity: 0.7;
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.request-body p {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #c9d1d9;
+}
+
+.request-body .notes {
+    background: #0d1117;
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: #d29922;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-top: 3rem;
+}
+
+.actions-grid {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.action-btn {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #f0f6fc;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: #30363d;
+}
+
+.action-badge {
+    background: #f85149;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
