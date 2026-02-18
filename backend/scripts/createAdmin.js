@@ -22,7 +22,7 @@ const createAdmin = async () => {
             firstName: 'System',
             lastName: 'Administrator',
             email: 'admin@iiit.ac.in',
-            password: 'Admin@123456', // Will be hashed automatically by pre-save hook
+            password: process.env.ADMIN_PASSWORD || 'ChangeMe@123', // Use env var or default
             role: 'admin'
         });
 
@@ -30,7 +30,7 @@ const createAdmin = async () => {
         console.log('==========================================');
         console.log('Admin Credentials:');
         console.log('Email:', admin.email);
-        console.log('Password: Admin@123456');
+        console.log('Password:', process.env.ADMIN_PASSWORD || 'ChangeMe@123');
         console.log('==========================================');
         console.log('⚠️  Please change the password after first login!');
 
