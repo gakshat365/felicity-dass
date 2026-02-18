@@ -60,13 +60,13 @@ const BrowseEvents = () => {
         <div className="browse-container">
             <header className="page-header">
                 <h1>Browse Events</h1>
-                <p>Find your next big opportunity at DASS Events</p>
+                <p>Welcome to Felicity 2026</p>
             </header>
 
             {/* Trending Section */}
             {trendingEvents.length > 0 && (
                 <section className="trending-section">
-                    <h2>🔥 Trending Now (Top 5)</h2>
+                    <h2> Trending Now </h2>
                     <div className="trending-scroll">
                         {trendingEvents.map(event => (
                             <div key={event._id} className="trending-card" onClick={() => navigate(`/events/${event._id}`)}>
