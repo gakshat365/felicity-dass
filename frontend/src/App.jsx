@@ -14,6 +14,7 @@ import EditEvent from './pages/EditEvent';
 import MyEvents from './pages/MyEvents';
 import MyRegistrations from './pages/MyRegistrations';
 import OrganizersList from './pages/OrganizersList';
+import OrganizerProfile from './pages/OrganizerProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import OrganizerEventDetail from './pages/OrganizerEventDetail';
 import PaymentUpload from './pages/PaymentUpload';
@@ -97,6 +98,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['participant']}>
                 <OrganizersList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizers/:id"
+            element={
+              <ProtectedRoute allowedRoles={['participant']}>
+                <OrganizerProfile />
               </ProtectedRoute>
             }
           />

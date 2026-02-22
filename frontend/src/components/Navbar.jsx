@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { FaCalendarAlt } from 'react-icons/fa';
+import Notifications from './Notifications';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -63,6 +64,7 @@ const Navbar = () => {
 
                 <div className={`nav-menu ${isMenuOpen ? 'open' : ''}`}>
                     {renderLinks()}
+                    <Notifications />
                     <button onClick={handleLogout} className="logout-btn">
                         Logout
                     </button>

@@ -114,7 +114,13 @@ const OrganizersList = () => {
                                     >
                                         {isFollowing(org._id) ? '✓ Following' : '+ Follow'}
                                     </button>
-                                    <button className="view-btn">View Events</button>
+                                    <button
+                                        className="view-btn"
+                                        onClick={() => {
+                                            const navigate = require('react-router-dom').useNavigate;
+                                            window.location.href = `/organizers/${org._id}`;
+                                        }}
+                                    >View Events</button>
                                 </div>
                             </div>
                         ))

@@ -131,10 +131,12 @@ const getEvents = async (req, res) => {
 
         // Filter by status (default to published for public)
         if (status) {
-            query.status = status;
+            const statusArray = status.split(',');
+            query.status = { $in: statusArray };
         } else {
             query.status = 'published';
         }
+
 
         // Filter by organizer
         if (organizer) {

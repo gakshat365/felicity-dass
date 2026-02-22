@@ -65,6 +65,7 @@ app.use('/api/registrations', require('./routes/registrationRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/forum', require('./routes/forumRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

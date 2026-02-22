@@ -178,7 +178,7 @@ const getOrganizers = async (req, res) => {
         }
 
         const organizers = await User.find(query)
-            .select('organizerName category description followerCount')
+            .select('organizerName category description followerCount contactEmail')
             .sort({ followerCount: -1 });
 
         res.json(organizers);
@@ -186,6 +186,27 @@ const getOrganizers = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+/**
+ * @desc    Get a single organizer by ID
+ * @route   GET /api/users/organizers/:id
+ * @access  Public
+ */
+const getOrganizerById = async (req, res) => {
+    try {
+        const organizer = await User.findById(req.params.id)
+            .select('organizerName category description contactEmail followerCount role');
+
+        if (!organizer || organizer.role !== 'organizer') {
+            return res.status(404).json({ message: 'Organizer not found' });
+        }
+
+        res.json(organizer);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 /**
  * @desc    Follow/Unfollow an organizer
@@ -305,6 +326,7 @@ module.exports = {
     updateProfile,
     saveOnboarding,
     getOrganizers,
+    getOrganizerById,
     toggleFollow,
     getProfileCompletion,
     testWebhook
