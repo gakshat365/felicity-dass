@@ -16,7 +16,7 @@ const INTEREST_OPTIONS = [
 ];
 
 const Profile = () => {
-    const { user, setUser, logout } = useContext(AuthContext);
+    const { user, updateUserProfile, logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ const Profile = () => {
 
         try {
             const { data } = await axios.patch('/users/profile', formData);
-            setUser(data);
+            updateUserProfile(data);
             setEditing(false);
             toast.success('Profile updated successfully!');
         } catch (error) {
