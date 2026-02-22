@@ -174,6 +174,8 @@ const EventDetails = () => {
                     {event.type === 'normal' && event.customForm && event.customForm.length > 0 && (
                         <div className="form-section">
                             <h3>Registration Form Preview</h3>
+                            {event.customFormTitle && <h4 className="custom-form-title">{event.customFormTitle}</h4>}
+                            {event.customFormDescription && <p className="custom-form-description">{event.customFormDescription}</p>}
                             <p className="form-note">This form will be shown during registration</p>
                             {event.customForm.map((question, index) => (
                                 <div key={question.questionId} className="form-question">

@@ -35,6 +35,8 @@ const CreateEvent = () => {
         },
 
         // Step 4: Custom Form (for normal events)
+        customFormTitle: '',
+        customFormDescription: '',
         customForm: [],
 
         // Step 5: Additional
@@ -394,10 +396,32 @@ const CreateEvent = () => {
                             <h2>{formData.type === 'normal' ? 'Registration Form' : 'Additional Details'}</h2>
 
                             {formData.type === 'normal' ? (
-                                <FormBuilder
-                                    fields={formData.customForm}
-                                    onChange={handleFormBuilderChange}
-                                />
+                                <>
+                                    <div className="form-group">
+                                        <label>Form Title</label>
+                                        <input
+                                            type="text"
+                                            name="customFormTitle"
+                                            value={formData.customFormTitle}
+                                            onChange={handleChange}
+                                            placeholder="Enter form title"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Form Description</label>
+                                        <textarea
+                                            name="customFormDescription"
+                                            value={formData.customFormDescription}
+                                            onChange={handleChange}
+                                            placeholder="Enter a short description for the form"
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <FormBuilder
+                                        fields={formData.customForm}
+                                        onChange={handleFormBuilderChange}
+                                    />
+                                </>
                             ) : (
                                 <div className="info-box">
                                     <p>Merchandise events don't require a custom registration form.</p>

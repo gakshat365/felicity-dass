@@ -122,7 +122,8 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                     {/* Custom Registration Form */}
                     {event.type === 'normal' && event.customForm && event.customForm.length > 0 && (
                         <div className="custom-form-section">
-                            <h3>Registration Details</h3>
+                            <h3>{event.customFormTitle || 'Registration Details'}</h3>
+                            {event.customFormDescription && <p className="custom-form-desc">{event.customFormDescription}</p>}
                             {event.customForm.map((field, index) => (
                                 <div key={index} className="form-group">
                                     <label>

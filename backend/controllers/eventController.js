@@ -21,6 +21,8 @@ const createEvent = async (req, res) => {
             registrationLimit,
             registrationFee,
             tags,
+            customFormTitle,
+            customFormDescription,
             customForm,
             merchandiseDetails,
             itemDetails,
@@ -62,6 +64,8 @@ const createEvent = async (req, res) => {
             registrationLimit,
             registrationFee: registrationFee || 0,
             tags: tags || [],
+            customFormTitle: type === 'normal' ? customFormTitle : undefined,
+            customFormDescription: type === 'normal' ? customFormDescription : undefined,
             customForm: type === 'normal' ? customForm : [],
             merchandiseDetails: type === 'merchandise' ? merchandiseDetails : undefined,
             itemDetails: type === 'merchandise' ? (itemDetails || merchandiseDetails) : undefined,
@@ -317,7 +321,7 @@ const updateEvent = async (req, res) => {
         // Determine what can be edited based on status
         const allowedUpdates = {
             draft: 'all', // Can edit everything
-            published: ['description', 'registrationDeadline', 'registrationLimit', 'tags'], // Limited edits
+            published: ['description', 'registrationDeadline', 'registrationLimit', 'tags', 'status'], // Limited edits
             ongoing: ['status'], // Only status change
             completed: ['status'], // Only status change
             cancelled: [] // No edits
@@ -334,11 +338,26 @@ const updateEvent = async (req, res) => {
             });
         } else if (Array.isArray(allowed)) {
             // Update only allowed fields
-            allowed.forEach(field => {
+            for (const field of allowed) {
                 if (req.body[field] !== undefined) {
+                    if (event.status === 'published') {
+                        if (field === 'registrationDeadline' && new Date(req.body[field]) < new Date(event.registrationDeadline)) {
+                            return res.status(400).json({ message: 'Can only extend registration deadline' });
+                        }
+                        if (field === 'registrationLimit' && req.body[field] < event.registrationLimit) {
+                            return res.status(400).json({ message: 'Can only increase registration limit' });
+                        }
+                        if (field === 'status' && !['ongoing', 'completed', 'cancelled'].includes(req.body[field])) {
+                            return res.status(400).json({ message: 'Invalid status transition from published' });
+                        }
+                    } else if (['ongoing', 'completed'].includes(event.status)) {
+                        if (field === 'status' && !['completed', 'cancelled'].includes(req.body[field])) {
+                            return res.status(400).json({ message: 'Ongoing/Completed events can only be marked completed or cancelled' });
+                        }
+                    }
                     event[field] = req.body[field];
                 }
-            });
+            }
         } else {
             return res.status(400).json({ message: `Cannot edit ${event.status} events` });
         }

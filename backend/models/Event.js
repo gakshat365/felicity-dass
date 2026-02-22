@@ -37,6 +37,8 @@ const eventSchema = mongoose.Schema({
     },
 
     // For Normal Events: Custom Registration Form (max 25 questions)
+    customFormTitle: { type: String },
+    customFormDescription: { type: String },
     customForm: [{
         questionId: { type: String, required: true }, // UUID
         questionText: { type: String, required: true },

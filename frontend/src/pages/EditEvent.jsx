@@ -25,6 +25,8 @@ const EditEvent = () => {
         registrationLimit: '',
         stock: '',
         merchandiseDetails: { sizes: [], colors: [], variants: [] },
+        customFormTitle: '',
+        customFormDescription: '',
         customForm: [],
         tags: [],
         upiId: ''
@@ -63,6 +65,8 @@ const EditEvent = () => {
                 registrationLimit: data.registrationLimit || '',
                 stock: data.stock || '',
                 merchandiseDetails: data.merchandiseDetails || { sizes: [], colors: [], variants: [] },
+                customFormTitle: data.customFormTitle || '',
+                customFormDescription: data.customFormDescription || '',
                 customForm: data.customForm || [],
                 tags: data.tags || [],
                 upiId: data.upiId || ''
@@ -267,6 +271,14 @@ const EditEvent = () => {
                     {formData.type === 'normal' && eventStatus === 'draft' && (
                         <div className="form-step">
                             <h2>Registration Form</h2>
+                            <div className="form-group">
+                                <label>Form Title</label>
+                                <input type="text" name="customFormTitle" value={formData.customFormTitle} onChange={handleChange} placeholder="Enter form title" disabled={isReadOnly} />
+                            </div>
+                            <div className="form-group">
+                                <label>Form Description</label>
+                                <textarea name="customFormDescription" value={formData.customFormDescription} onChange={handleChange} placeholder="Enter form description" rows={2} disabled={isReadOnly} />
+                            </div>
                             <FormBuilder fields={formData.customForm} onChange={handleFormBuilderChange} />
                         </div>
                     )}
