@@ -19,27 +19,27 @@ const { getEventRegistrations } = require('../controllers/registrationController
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
-// Public routes
+// Public routes (named routes MUST come before /:id)
 router.get('/', getEvents);
 router.get('/trending', getTrendingEvents);
 router.get('/ending-soon', getEndingSoonEvents);
-router.get('/:id', getEventById);
 
-// Protected participant routes
+// Protected participant routes (named, must be before /:id)
 router.get('/for-you', protect, authorize('participant'), getForYouEvents);
 router.get('/following', protect, authorize('participant'), getFollowingEvents);
 
-// Protected organizer/admin routes
-router.use(protect);
-router.use(authorize('organizer', 'admin'));
+// Protected organizer/admin routes (named, must be before /:id)
+router.get('/organizer/my-events', protect, authorize('organizer', 'admin'), getMyEvents);
+router.get('/organizer/stats', protect, authorize('organizer', 'admin'), getOrganizerStats);
+router.post('/', protect, authorize('organizer', 'admin'), createEvent);
+router.post('/attendance/mark', protect, authorize('organizer', 'admin'), markAttendance);
 
-router.get('/my-events', getMyEvents);
-router.get('/organizer/stats', getOrganizerStats);
-router.post('/', createEvent);
-router.patch('/:id', updateEvent);
-router.delete('/:id', deleteEvent);
-router.post('/attendance/mark', markAttendance);
-router.get('/:id/export-csv', exportEventCSV);
-router.get('/:id/registrations', getEventRegistrations);
+// Parameterized routes LAST (/:id is a catch-all)
+router.get('/:id', getEventById);
+router.patch('/:id', protect, authorize('organizer', 'admin'), updateEvent);
+router.delete('/:id', protect, authorize('organizer', 'admin'), deleteEvent);
+router.get('/:id/export-csv', protect, authorize('organizer', 'admin'), exportEventCSV);
+router.get('/:id/registrations', protect, authorize('organizer', 'admin'), getEventRegistrations);
 
 module.exports = router;
+

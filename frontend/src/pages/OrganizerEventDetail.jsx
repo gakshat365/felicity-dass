@@ -94,8 +94,23 @@ const OrganizerEventDetail = () => {
         }
     };
 
-    const exportCSV = () => {
-        window.open(`${axios.defaults.baseURL}/events/${id}/export-csv`, '_blank');
+    const exportCSV = async () => {
+        try {
+            const response = await axios.get(`/events/${id}/export-csv`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `event-${id}-registrations.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('CSV exported successfully');
+        } catch (error) {
+            toast.error('Failed to export CSV');
+        }
     };
 
     if (loading) return <div className="loading">Loading event details...</div>;

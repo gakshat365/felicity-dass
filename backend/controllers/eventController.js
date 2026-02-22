@@ -131,13 +131,22 @@ const getEvents = async (req, res) => {
             if (endDate) query.startDate.$lte = new Date(endDate);
         }
 
-        // Search by name or description (enhanced)
+        // Search by name, description, tags, or organizer name
         if (search) {
-            const searchRegex = new RegExp(search.split(' ').join('|'), 'i'); // Simple fuzzy: matches any word
+            const searchRegex = new RegExp(search.split(' ').join('|'), 'i');
+
+            // To search by organizer name, we first find organizers matching the name
+            const matchingOrganizers = await User.find({
+                role: 'organizer',
+                organizerName: { $regex: searchRegex }
+            }).select('_id');
+            const organizerIds = matchingOrganizers.map(o => o._id);
+
             query.$or = [
                 { name: { $regex: searchRegex } },
                 { description: { $regex: searchRegex } },
-                { tags: { $in: [searchRegex] } }
+                { tags: { $in: [searchRegex] } },
+                { organizer: { $in: organizerIds } }
             ];
         }
 

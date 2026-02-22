@@ -30,10 +30,8 @@ const registerUser = async (req, res) => {
 
     // Email domain validation based on role
     if (role === 'organizer') {
-        const emailValidation = validateOrganizerEmail(email);
-        if (!emailValidation.valid) {
-            return res.status(400).json({ message: emailValidation.message });
-        }
+        // Requirement 4.1.2: No self-registration for organizers
+        return res.status(403).json({ message: 'Organizer self-registration is not allowed. Accounts must be provisioned by Admin.' });
     } else {
         // Participant validation
         const emailValidation = validateParticipantEmail(email);
@@ -53,8 +51,11 @@ const registerUser = async (req, res) => {
         return res.status(400).json({ message: 'User already exists' });
     }
 
+    // Use participant as default role if none provided
+    const effectiveRole = role || 'participant';
+
     // Determine participant type for participants
-    const participantType = role === 'participant' ? getParticipantType(email) : undefined;
+    const participantType = effectiveRole === 'participant' ? getParticipantType(email) : undefined;
 
     // Create User
     const user = await User.create({
@@ -62,7 +63,7 @@ const registerUser = async (req, res) => {
         lastName,
         email,
         password,
-        role: role || 'participant',
+        role: effectiveRole,
         participantType,
         organizerName: role === 'organizer' ? organizerName : undefined,
         category: role === 'organizer' ? category : undefined,

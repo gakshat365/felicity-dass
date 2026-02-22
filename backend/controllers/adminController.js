@@ -159,6 +159,8 @@ const createOrganizer = async (req, res) => {
         // Generate random password
         const password = crypto.randomBytes(8).toString('hex');
         const organizer = await User.create({
+            firstName: organizerName,
+            lastName: category || 'Organizer',
             email,
             password, // Let model hash it
             role: 'organizer',

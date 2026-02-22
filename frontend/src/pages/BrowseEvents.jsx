@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 import EventCard from '../components/EventCard';
 import './BrowseEvents.css';
 
 const BrowseEvents = () => {
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     const [events, setEvents] = useState([]);
     const [trendingEvents, setTrendingEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [followedOnly, setFollowedOnly] = useState(false);
     const [filters, setFilters] = useState({
         search: '',
         type: 'all',
@@ -21,21 +24,28 @@ const BrowseEvents = () => {
     useEffect(() => {
         fetchEvents();
         fetchTrending();
-    }, [filters]);
+    }, [filters, followedOnly]);
 
     const fetchEvents = async () => {
         try {
             setLoading(true);
-            const params = {};
-            if (filters.type !== 'all') params.type = filters.type;
-            if (filters.tags !== 'all') params.tags = filters.tags;
-            if (filters.eligibility !== 'all') params.eligibility = filters.eligibility;
-            if (filters.search) params.search = filters.search;
-            if (filters.startDate) params.startDate = filters.startDate;
-            if (filters.endDate) params.endDate = filters.endDate;
 
-            const { data } = await axios.get('/events', { params });
-            setEvents(data);
+            // If followed-only filter is active and user is logged in
+            if (followedOnly && user) {
+                const { data } = await axios.get('/events/following');
+                setEvents(data);
+            } else {
+                const params = {};
+                if (filters.type !== 'all') params.type = filters.type;
+                if (filters.tags !== 'all') params.tags = filters.tags;
+                if (filters.eligibility !== 'all') params.eligibility = filters.eligibility;
+                if (filters.search) params.search = filters.search;
+                if (filters.startDate) params.startDate = filters.startDate;
+                if (filters.endDate) params.endDate = filters.endDate;
+
+                const { data } = await axios.get('/events', { params });
+                setEvents(data);
+            }
         } catch (error) {
             console.error('Error fetching events:', error);
         } finally {
@@ -129,6 +139,20 @@ const BrowseEvents = () => {
                             <option value="art">Art</option>
                         </select>
                     </div>
+
+                    {user?.role === 'participant' && (
+                        <div className="filter-group">
+                            <label>Followed Clubs</label>
+                            <label className="toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={followedOnly}
+                                    onChange={(e) => setFollowedOnly(e.target.checked)}
+                                />
+                                <span>Show only from clubs I follow</span>
+                            </label>
+                        </div>
+                    )}
                 </aside>
 
                 <main className="events-main">
@@ -137,9 +161,12 @@ const BrowseEvents = () => {
                     ) : events.length === 0 ? (
                         <div className="no-results">
                             <h3>No events found matching your criteria.</h3>
-                            <button onClick={() => setFilters({
-                                search: '', type: 'all', eligibility: 'all', startDate: '', endDate: '', tags: 'all'
-                            })}>Clear Filters</button>
+                            <button onClick={() => {
+                                setFilters({
+                                    search: '', type: 'all', eligibility: 'all', startDate: '', endDate: '', tags: 'all'
+                                });
+                                setFollowedOnly(false);
+                            }}>Clear Filters</button>
                         </div>
                     ) : (
                         <div className="events-grid">

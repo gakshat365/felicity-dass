@@ -1,14 +1,40 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import AuthContext from '../context/AuthContext';
 import OrganizerDashboard from './OrganizerDashboard';
 import AdminDashboard from './AdminDashboard';
 import ProfileBanner from '../components/ProfileBanner';
 import { useNavigate } from 'react-router-dom';
+import axios from '../api/axios';
+import { format } from 'date-fns';
 import './Dashboard.css';
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [recentRegistrations, setRecentRegistrations] = useState([]);
+    const [loadingEvents, setLoadingEvents] = useState(true);
+
+    useEffect(() => {
+        if (user?.role === 'participant') {
+            fetchDashboardData();
+        }
+    }, [user]);
+
+    const fetchDashboardData = async () => {
+        try {
+            const [eventsRes, regsRes] = await Promise.all([
+                axios.get('/registrations/my-registrations?type=upcoming'),
+                axios.get('/registrations/my-registrations?type=completed')
+            ]);
+            setUpcomingEvents(eventsRes.data.slice(0, 4));
+            setRecentRegistrations(regsRes.data.slice(0, 4));
+        } catch (error) {
+            console.error('Dashboard data fetch error:', error);
+        } finally {
+            setLoadingEvents(false);
+        }
+    };
 
     if (user?.role === 'admin') return <AdminDashboard />;
     if (user?.role === 'organizer') return <OrganizerDashboard />;
@@ -17,7 +43,7 @@ const Dashboard = () => {
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="header-content">
-                    <h1>Participant Dashboard</h1>
+                    <h1>Welcome back, {user?.firstName}! 👋</h1>
                     <p className="welcome-text">Explore and manage your registrations</p>
                 </div>
             </header>
@@ -25,6 +51,68 @@ const Dashboard = () => {
             <main className="dashboard-main">
                 <ProfileBanner />
 
+                {/* Upcoming Events Section */}
+                <div className="dashboard-section">
+                    <div className="section-header">
+                        <h2>🎫 Upcoming Events</h2>
+                        <button className="see-all-btn" onClick={() => navigate('/my-registrations')}>
+                            See All →
+                        </button>
+                    </div>
+                    {loadingEvents ? (
+                        <div className="loading-small">Loading...</div>
+                    ) : upcomingEvents.length > 0 ? (
+                        <div className="upcoming-grid">
+                            {upcomingEvents.map(reg => (
+                                <div key={reg._id} className="upcoming-card" onClick={() => navigate(`/events/${reg.event?._id}`)}>
+                                    <div className="upcoming-card-header">
+                                        <span className={`status-dot ${reg.status}`}></span>
+                                        <span className="event-type-tag">{reg.registrationType}</span>
+                                    </div>
+                                    <h4>{reg.event?.name}</h4>
+                                    <p className="upcoming-date">
+                                        📅 {reg.event?.startDate ? format(new Date(reg.event.startDate), 'MMM dd, yyyy') : 'TBD'}
+                                    </p>
+                                    <p className="upcoming-organizer">
+                                        by {reg.event?.organizer?.organizerName || 'Unknown'}
+                                    </p>
+                                    <span className={`upcoming-status ${reg.status}`}>{reg.status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="empty-section">
+                            <p>You haven't registered for any upcoming events yet.</p>
+                            <button className="btn btn-primary btn-sm" onClick={() => navigate('/events')}>Browse Events</button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Participation History */}
+                {recentRegistrations.length > 0 && (
+                    <div className="dashboard-section">
+                        <div className="section-header">
+                            <h2>📜 Recent Participation</h2>
+                        </div>
+                        <div className="history-list">
+                            {recentRegistrations.map(reg => (
+                                <div key={reg._id} className="history-item">
+                                    <div className="history-info">
+                                        <span className="history-name">{reg.event?.name}</span>
+                                        <span className="history-date">
+                                            {reg.event?.startDate ? format(new Date(reg.event.startDate), 'MMM dd') : ''}
+                                        </span>
+                                    </div>
+                                    <span className={`history-status ${reg.attendanceStatus === 'Present' ? 'attended' : ''}`}>
+                                        {reg.attendanceStatus === 'Present' ? '✓ Attended' : 'Completed'}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Quick Actions */}
                 <div className="dashboard-grid">
                     <div className="action-card primary" onClick={() => navigate('/events')}>
                         <div className="card-icon">🔎</div>

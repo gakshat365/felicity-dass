@@ -119,8 +119,9 @@ const createRegistration = async (req, res) => {
         const participant = await User.findById(participantId);
 
         // Generate ticket ONLY if confirmed (Free events)
+        let ticket = null;
         if (registration.status === 'confirmed') {
-            const ticket = await generateTicket(registration, event, participant);
+            ticket = await generateTicket(registration, event, participant);
 
             // Update registration with ticket data
             registration.ticketId = ticket.ticketId;
@@ -144,14 +145,19 @@ const createRegistration = async (req, res) => {
         // Populate for response
         await registration.populate('event participant');
 
-        res.status(201).json({
+        const response = {
             message: 'Registration successful!',
-            registration,
-            ticket: {
+            registration
+        };
+
+        if (ticket) {
+            response.ticket = {
                 ticketId: ticket.ticketId,
                 qrCode: ticket.qrCodeBase64
-            }
-        });
+            };
+        }
+
+        res.status(201).json(response);
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ message: error.message || 'Registration failed' });

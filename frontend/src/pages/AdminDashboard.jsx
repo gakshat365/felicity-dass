@@ -24,6 +24,11 @@ const AdminDashboard = () => {
     const [allEvents, setAllEvents] = useState([]);
     const [passwordRequests, setPasswordRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showAddOrganizer, setShowAddOrganizer] = useState(false);
+    const [newOrganizer, setNewOrganizer] = useState({
+        email: '', organizerName: '', category: '', description: ''
+    });
+    const [createdOrgResult, setCreatedOrgResult] = useState(null);
 
     useEffect(() => {
         if (user?.role !== 'admin') {
@@ -115,6 +120,19 @@ const AdminDashboard = () => {
         } catch (error) {
             console.error('Status toggle error:', error);
             toast.error('Failed to update organizer status');
+        }
+    };
+
+    const handleCreateOrganizer = async (e) => {
+        e.preventDefault();
+        try {
+            const { data } = await axios.post('/admin/organizers', newOrganizer);
+            toast.success('Organizer created successfully!');
+            setCreatedOrgResult(data);
+            setNewOrganizer({ email: '', organizerName: '', category: '', description: '' });
+            fetchDashboardData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to create organizer');
         }
     };
 
@@ -329,15 +347,78 @@ const AdminDashboard = () => {
                 {/* All Organizers Tab */}
                 {activeTab === 'organizers' && (
                     <div className="tab-content">
-                        <div className="search-bar">
+                        <div className="search-bar" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <input
                                 type="text"
                                 placeholder="Search organizers by name, email, or category..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="search-input"
+                                style={{ flex: 1 }}
                             />
+                            <button
+                                onClick={() => { setShowAddOrganizer(!showAddOrganizer); setCreatedOrgResult(null); }}
+                                className="btn btn-primary btn-sm"
+                            >
+                                {showAddOrganizer ? 'Cancel' : '+ Add Organizer'}
+                            </button>
                         </div>
+
+                        {showAddOrganizer && (
+                            <div className="add-organizer-form" style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: '8px', padding: '24px', marginBottom: '20px' }}>
+                                <h3 style={{ color: '#c9d1d9', marginBottom: '16px' }}>Create New Organizer</h3>
+                                {createdOrgResult ? (
+                                    <div style={{ background: '#0d1117', border: '1px solid #3fb950', borderRadius: '8px', padding: '20px' }}>
+                                        <p style={{ color: '#3fb950', fontWeight: 'bold', marginBottom: '8px' }}>✅ Organizer Created Successfully!</p>
+                                        <p style={{ color: '#c9d1d9' }}><strong>Email:</strong> {createdOrgResult.email}</p>
+                                        <p style={{ color: '#f0883e', fontFamily: 'monospace', fontSize: '18px', marginTop: '8px' }}>
+                                            <strong>Temporary Password:</strong> {createdOrgResult.password}
+                                        </p>
+                                        <p style={{ color: '#8b949e', fontSize: '13px', marginTop: '8px' }}>⚠️ Share this password securely with the organizer. They should change it on first login.</p>
+                                        <button onClick={() => { setShowAddOrganizer(false); setCreatedOrgResult(null); }} className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }}>Close</button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleCreateOrganizer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                        <div className="form-group">
+                                            <label style={{ color: '#8b949e', display: 'block', marginBottom: '6px' }}>Email *</label>
+                                            <input type="email" className="form-input" required value={newOrganizer.email}
+                                                onChange={(e) => setNewOrganizer({ ...newOrganizer, email: e.target.value })}
+                                                placeholder="organizer@clubs.iiit.ac.in"
+                                                style={{ width: '100%', padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '6px', color: '#c9d1d9' }} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label style={{ color: '#8b949e', display: 'block', marginBottom: '6px' }}>Organizer Name *</label>
+                                            <input type="text" className="form-input" required value={newOrganizer.organizerName}
+                                                onChange={(e) => setNewOrganizer({ ...newOrganizer, organizerName: e.target.value })}
+                                                placeholder="e.g. Programming Club"
+                                                style={{ width: '100%', padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '6px', color: '#c9d1d9' }} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label style={{ color: '#8b949e', display: 'block', marginBottom: '6px' }}>Category *</label>
+                                            <select className="form-input" required value={newOrganizer.category}
+                                                onChange={(e) => setNewOrganizer({ ...newOrganizer, category: e.target.value })}
+                                                style={{ width: '100%', padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '6px', color: '#c9d1d9' }}>
+                                                <option value="">Select category</option>
+                                                <option value="club">Club</option>
+                                                <option value="fest">Fest Team</option>
+                                                <option value="department">Department</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label style={{ color: '#8b949e', display: 'block', marginBottom: '6px' }}>Description</label>
+                                            <input type="text" className="form-input" value={newOrganizer.description}
+                                                onChange={(e) => setNewOrganizer({ ...newOrganizer, description: e.target.value })}
+                                                placeholder="Brief description"
+                                                style={{ width: '100%', padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '6px', color: '#c9d1d9' }} />
+                                        </div>
+                                        <div style={{ gridColumn: '1 / -1' }}>
+                                            <button type="submit" className="btn btn-success btn-sm">Create Organizer</button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        )}
 
                         <div className="organizers-table">
                             <table>

@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import BrowseEvents from './pages/BrowseEvents';
 import EventDetails from './pages/EventDetails';
 import CreateEvent from './pages/CreateEvent';
+import EditEvent from './pages/EditEvent';
 import MyEvents from './pages/MyEvents';
 import MyRegistrations from './pages/MyRegistrations';
 import OrganizersList from './pages/OrganizersList';
@@ -106,6 +107,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['organizer', 'admin']}>
                 <CreateEvent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={['organizer', 'admin']}>
+                <EditEvent />
               </ProtectedRoute>
             }
           />

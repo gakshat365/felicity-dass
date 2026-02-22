@@ -1,0 +1,324 @@
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import axios from '../api/axios';
+import toast from 'react-hot-toast';
+import FormBuilder from '../components/FormBuilder';
+import './CreateEvent.css';
+
+const EditEvent = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [eventStatus, setEventStatus] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        type: 'normal',
+        startDate: '',
+        endDate: '',
+        registrationDeadline: '',
+        eligibility: 'All',
+        registrationFee: 0,
+        registrationLimit: '',
+        stock: '',
+        merchandiseDetails: { sizes: [], colors: [], variants: [] },
+        customForm: [],
+        tags: [],
+        upiId: ''
+    });
+    const [tagInput, setTagInput] = useState('');
+
+    useEffect(() => {
+        fetchEvent();
+    }, [id]);
+
+    const fetchEvent = async () => {
+        try {
+            const { data } = await axios.get(`/events/${id}`);
+
+            // Check authorization
+            if (data.organizer?._id !== user?._id && user?.role !== 'admin') {
+                toast.error('Not authorized to edit this event');
+                navigate('/dashboard');
+                return;
+            }
+
+            setEventStatus(data.status);
+
+            // Format dates for datetime-local input
+            const formatDate = (d) => d ? new Date(d).toISOString().slice(0, 16) : '';
+
+            setFormData({
+                name: data.name || '',
+                description: data.description || '',
+                type: data.type || 'normal',
+                startDate: formatDate(data.startDate),
+                endDate: formatDate(data.endDate),
+                registrationDeadline: formatDate(data.registrationDeadline),
+                eligibility: data.eligibility || 'All',
+                registrationFee: data.registrationFee || 0,
+                registrationLimit: data.registrationLimit || '',
+                stock: data.stock || '',
+                merchandiseDetails: data.merchandiseDetails || { sizes: [], colors: [], variants: [] },
+                customForm: data.customForm || [],
+                tags: data.tags || [],
+                upiId: data.upiId || ''
+            });
+        } catch (error) {
+            toast.error('Failed to load event');
+            navigate('/dashboard');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleMerchandiseChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            merchandiseDetails: {
+                ...prev.merchandiseDetails,
+                [field]: value.split(',').map(item => item.trim()).filter(Boolean)
+            }
+        }));
+    };
+
+    const addTag = () => {
+        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+            setFormData(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
+            setTagInput('');
+        }
+    };
+
+    const removeTag = (tagToRemove) => {
+        setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
+    };
+
+    const handleFormBuilderChange = (fields) => {
+        setFormData(prev => ({ ...prev, customForm: fields }));
+    };
+
+    const handleSave = async (newStatus) => {
+        setSaving(true);
+        try {
+            const eventData = {
+                ...formData,
+                status: newStatus || eventStatus,
+                registrationFee: parseFloat(formData.registrationFee) || 0,
+                registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
+                stock: formData.stock ? parseInt(formData.stock) : null
+            };
+
+            await axios.patch(`/events/${id}`, eventData);
+            toast.success('Event updated successfully!');
+            navigate(`/events/${id}`);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update event');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Determine what's editable based on status
+    const isPublished = eventStatus === 'published';
+    const isOngoing = eventStatus === 'ongoing';
+    const isCompleted = eventStatus === 'completed';
+    const isReadOnly = isCompleted;
+
+    if (loading) return <div className="loading">Loading event...</div>;
+
+    return (
+        <div className="create-event-container">
+            <header className="create-header">
+                <div className="header-content">
+                    <h1>Edit Event</h1>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <span className={`status-badge status-${eventStatus}`} style={{ textTransform: 'capitalize' }}>
+                            {eventStatus}
+                        </span>
+                        <button onClick={() => navigate(-1)} className="btn btn-secondary btn-sm">Cancel</button>
+                    </div>
+                </div>
+            </header>
+
+            {isReadOnly && (
+                <div className="info-box" style={{ margin: '0 auto', maxWidth: '900px', marginBottom: '1rem' }}>
+                    <p>⚠️ This event is <strong>{eventStatus}</strong> and cannot be edited.</p>
+                </div>
+            )}
+
+            {(isPublished || isOngoing) && (
+                <div className="info-box" style={{ margin: '0 auto', maxWidth: '900px', marginBottom: '1rem' }}>
+                    <p>⚠️ Some fields are locked because registrations may already exist. You can still update the description, tags, and dates.</p>
+                </div>
+            )}
+
+            <div className="create-main">
+                <div className="form-container">
+                    {/* Basic Info */}
+                    <div className="form-step">
+                        <h2>Basic Information</h2>
+                        <div className="form-group">
+                            <label>Event Name *</label>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange}
+                                disabled={isReadOnly || isPublished || isOngoing} />
+                        </div>
+                        <div className="form-group">
+                            <label>Description *</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange}
+                                rows={6} disabled={isReadOnly} />
+                        </div>
+                        <div className="form-group">
+                            <label>Event Type</label>
+                            <select name="type" value={formData.type} onChange={handleChange}
+                                disabled={isReadOnly || isPublished || isOngoing}>
+                                <option value="normal">Normal Event</option>
+                                <option value="merchandise">Merchandise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Dates */}
+                    <div className="form-step">
+                        <h2>Dates & Eligibility</h2>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Start Date *</label>
+                                <input type="datetime-local" name="startDate" value={formData.startDate}
+                                    onChange={handleChange} disabled={isReadOnly} />
+                            </div>
+                            <div className="form-group">
+                                <label>End Date *</label>
+                                <input type="datetime-local" name="endDate" value={formData.endDate}
+                                    onChange={handleChange} disabled={isReadOnly} />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Registration Deadline</label>
+                            <input type="datetime-local" name="registrationDeadline" value={formData.registrationDeadline}
+                                onChange={handleChange} disabled={isReadOnly} />
+                        </div>
+                        <div className="form-group">
+                            <label>Eligibility</label>
+                            <select name="eligibility" value={formData.eligibility} onChange={handleChange}
+                                disabled={isReadOnly || isPublished || isOngoing}>
+                                <option value="All">All</option>
+                                <option value="IIIT Students">IIIT Students Only</option>
+                                <option value="IIIT Community">IIIT Community</option>
+                                <option value="Outside IIIT">Outside IIIT</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Pricing */}
+                    <div className="form-step">
+                        <h2>Pricing & Limits</h2>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Registration Fee (₹)</label>
+                                <input type="number" name="registrationFee" value={formData.registrationFee}
+                                    onChange={handleChange} min="0" disabled={isReadOnly || isPublished || isOngoing} />
+                            </div>
+                            <div className="form-group">
+                                <label>Registration Limit</label>
+                                <input type="number" name="registrationLimit" value={formData.registrationLimit}
+                                    onChange={handleChange} min="1" placeholder="No limit" disabled={isReadOnly} />
+                            </div>
+                        </div>
+
+                        {formData.type === 'merchandise' && (
+                            <>
+                                <div className="form-group">
+                                    <label>Stock</label>
+                                    <input type="number" name="stock" value={formData.stock}
+                                        onChange={handleChange} min="1" disabled={isReadOnly} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Sizes (comma-separated)</label>
+                                    <input type="text" value={formData.merchandiseDetails?.sizes?.join(', ') || ''}
+                                        onChange={(e) => handleMerchandiseChange('sizes', e.target.value)}
+                                        disabled={isReadOnly} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Colors (comma-separated)</label>
+                                    <input type="text" value={formData.merchandiseDetails?.colors?.join(', ') || ''}
+                                        onChange={(e) => handleMerchandiseChange('colors', e.target.value)}
+                                        disabled={isReadOnly} />
+                                </div>
+                            </>
+                        )}
+
+                        <div className="form-group">
+                            <label>UPI ID (for payments)</label>
+                            <input type="text" name="upiId" value={formData.upiId}
+                                onChange={handleChange} disabled={isReadOnly} />
+                        </div>
+                    </div>
+
+                    {/* Custom Form (only editable in draft) */}
+                    {formData.type === 'normal' && eventStatus === 'draft' && (
+                        <div className="form-step">
+                            <h2>Registration Form</h2>
+                            <FormBuilder fields={formData.customForm} onChange={handleFormBuilderChange} />
+                        </div>
+                    )}
+
+                    {/* Tags */}
+                    <div className="form-step">
+                        <h2>Tags</h2>
+                        <div className="form-group">
+                            <div className="tag-input-container">
+                                <input type="text" value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                                    placeholder="Add tags (press Enter)"
+                                    disabled={isReadOnly} />
+                                <button type="button" onClick={addTag} className="btn btn-secondary btn-sm"
+                                    disabled={isReadOnly}>Add</button>
+                            </div>
+                            <div className="tags-display">
+                                {formData.tags.map(tag => (
+                                    <span key={tag} className="tag">
+                                        {tag}
+                                        {!isReadOnly && <button onClick={() => removeTag(tag)}>&times;</button>}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    {!isReadOnly && (
+                        <div className="form-actions">
+                            <button onClick={() => navigate(-1)} className="btn btn-secondary">Cancel</button>
+                            <div className="action-right">
+                                {eventStatus === 'draft' && (
+                                    <button onClick={() => handleSave('draft')} className="btn btn-secondary"
+                                        disabled={saving}>Save Draft</button>
+                                )}
+                                {eventStatus === 'draft' && (
+                                    <button onClick={() => handleSave('published')} className="btn btn-primary"
+                                        disabled={saving}>{saving ? 'Publishing...' : 'Publish'}</button>
+                                )}
+                                {(isPublished || isOngoing) && (
+                                    <button onClick={() => handleSave()} className="btn btn-primary"
+                                        disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default EditEvent;
