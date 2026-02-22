@@ -114,39 +114,6 @@ const Register = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="auth-form">
-                        {/* Role Selection */}
-                        <div className="form-group">
-                            <label className="form-label">Account Type</label>
-                            <div className="role-selector">
-                                <label className="role-option">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="participant"
-                                        checked={formData.role === 'participant'}
-                                        onChange={handleChange}
-                                    />
-                                    <div className="role-card">
-                                        <div className="role-title">Participant</div>
-                                        <div className="role-desc">Register for events</div>
-                                    </div>
-                                </label>
-                                <label className="role-option">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="organizer"
-                                        checked={formData.role === 'organizer'}
-                                        onChange={handleChange}
-                                    />
-                                    <div className="role-card">
-                                        <div className="role-title">Organizer</div>
-                                        <div className="role-desc">Create & manage events</div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
                         {/* Name Fields */}
                         <div className="form-row">
                             <div className="form-group">
@@ -193,83 +160,19 @@ const Register = () => {
                                 id="email"
                                 name="email"
                                 className={`form-input ${errors.email ? 'error' : ''}`}
-                                placeholder={
-                                    formData.role === 'organizer'
-                                        ? 'club@clubs.iiit.ac.in'
-                                        : 'user@iiit.ac.in'
-                                }
+                                placeholder="user@iiit.ac.in"
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
                             />
                             {errors.email && <span className="error-text">{errors.email}</span>}
                             <span className="helper-text">
-                                {formData.role === 'organizer'
-                                    ? `Must use: ${IIIT_DOMAINS.ORGANIZER.join(', ')}`
-                                    : 'IIIT emails: @students.iiit.ac.in, @iiit.ac.in, etc. or any valid email'
-                                }
+                                IIIT emails: @students.iiit.ac.in, @iiit.ac.in, etc. or any valid email
                             </span>
                         </div>
 
                         {/* Organizer-specific fields */}
-                        {formData.role === 'organizer' && (
-                            <>
-                                <div className="form-group">
-                                    <label htmlFor="organizerName" className="form-label">
-                                        Organization Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="organizerName"
-                                        name="organizerName"
-                                        className={`form-input ${errors.organizerName ? 'error' : ''}`}
-                                        placeholder="Tech Club"
-                                        value={formData.organizerName}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    {errors.organizerName && <span className="error-text">{errors.organizerName}</span>}
-                                </div>
 
-                                <div className="form-group">
-                                    <label htmlFor="category" className="form-label">
-                                        Category
-                                    </label>
-                                    <select
-                                        id="category"
-                                        name="category"
-                                        className={`form-input ${errors.category ? 'error' : ''}`}
-                                        value={formData.category}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">Select category</option>
-                                        <option value="Technical">Technical</option>
-                                        <option value="Cultural">Cultural</option>
-                                        <option value="Sports">Sports</option>
-                                        <option value="Academic">Academic</option>
-                                        <option value="Social">Social</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    {errors.category && <span className="error-text">{errors.category}</span>}
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="description" className="form-label">
-                                        Description (Optional)
-                                    </label>
-                                    <textarea
-                                        id="description"
-                                        name="description"
-                                        className="form-input"
-                                        placeholder="Brief description of your organization"
-                                        value={formData.description}
-                                        onChange={handleChange}
-                                        rows="3"
-                                    />
-                                </div>
-                            </>
-                        )}
 
                         {/* Contact Number */}
                         <div className="form-group">

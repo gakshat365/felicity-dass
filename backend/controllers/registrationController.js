@@ -69,6 +69,25 @@ const createRegistration = async (req, res) => {
             return res.status(400).json({ message: 'You are already registered for this event' });
         }
 
+        // Validate custom form word counts
+        if (event.type === 'normal' && event.customForm && event.customForm.length > 0 && formResponses) {
+            for (const field of event.customForm) {
+                const fieldType = field.type || field.questionType;
+                const fieldLabel = field.label || field.questionText;
+
+                const response = formResponses[fieldLabel];
+                if (response && typeof response === 'string') {
+                    const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
+                    if ((fieldType === 'text' || fieldType === 'short') && wordCount > 50) {
+                        return res.status(400).json({ message: `Answer for "${fieldLabel}" cannot exceed 50 words` });
+                    }
+                    if ((fieldType === 'textarea' || fieldType === 'long') && wordCount > 200) {
+                        return res.status(400).json({ message: `Answer for "${fieldLabel}" cannot exceed 200 words` });
+                    }
+                }
+            }
+        }
+
         // Check registration limit
         if (event.registrationLimit) {
             const registrationCount = await Registration.countDocuments({

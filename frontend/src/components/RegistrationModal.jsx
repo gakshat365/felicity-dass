@@ -134,7 +134,14 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                         <input
                                             type="text"
                                             value={formData[field.label] || ''}
-                                            onChange={(e) => handleFormChange(field.label, e.target.value)}
+                                            onChange={(e) => {
+                                                const words = e.target.value.trim().split(/\s+/).filter(Boolean);
+                                                if (words.length > 50) {
+                                                    toast.error('Short answer cannot exceed 50 words');
+                                                    return;
+                                                }
+                                                handleFormChange(field.label, e.target.value);
+                                            }}
                                             required={field.required}
                                             placeholder={field.placeholder || ''}
                                         />
@@ -143,7 +150,14 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                     {field.type === 'textarea' && (
                                         <textarea
                                             value={formData[field.label] || ''}
-                                            onChange={(e) => handleFormChange(field.label, e.target.value)}
+                                            onChange={(e) => {
+                                                const words = e.target.value.trim().split(/\s+/).filter(Boolean);
+                                                if (words.length > 200) {
+                                                    toast.error('Long answer cannot exceed 200 words');
+                                                    return;
+                                                }
+                                                handleFormChange(field.label, e.target.value);
+                                            }}
                                             required={field.required}
                                             placeholder={field.placeholder || ''}
                                             rows={4}

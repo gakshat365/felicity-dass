@@ -96,9 +96,27 @@ const createEvent = async (req, res) => {
  */
 const getEvents = async (req, res) => {
     try {
-        const { type, tags, status, organizer, search, eligibility, startDate, endDate } = req.query;
+        const { type, tags, status, organizer, search, eligibility, startDate, endDate, followedOnly } = req.query;
 
         let query = {};
+
+        // Handle followedOnly functionality independently parsing token if needed
+        if (followedOnly === 'true' && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            try {
+                const token = req.headers.authorization.split(' ')[1];
+                const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
+                const userObj = await User.findById(decoded.id);
+                if (userObj && userObj.following && userObj.following.length > 0) {
+                    query.organizer = { $in: userObj.following };
+                } else {
+                    return res.json([]); // Return empty if following nobody
+                }
+            } catch (err) {
+                console.error('Followed Only Token Error:', err);
+                return res.json([]);
+            }
+        }
+
 
         // Filter by type
         if (type && ['normal', 'merchandise'].includes(type)) {
@@ -235,13 +253,44 @@ const getFollowingEvents = async (req, res) => {
  */
 const getTrendingEvents = async (req, res) => {
     try {
-        const events = await Event.find({
-            status: 'published',
-            registrationDeadline: { $gte: new Date() }
-        })
-            .populate('organizer', 'organizerName category')
-            .sort({ registrationCount: -1, viewCount: -1 })
-            .limit(10);
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const Registration = require('../models/Registration');
+
+        // Phase 3 Features: Trending (Top 5/24h)
+        const recentRegistrations = await Registration.aggregate([
+            { $match: { createdAt: { $gte: twentyFourHoursAgo } } },
+            { $group: { _id: '$event', recentCount: { $sum: 1 } } },
+            { $sort: { recentCount: -1 } },
+            { $limit: 5 }
+        ]);
+
+        const eventIds = recentRegistrations.map(r => r._id);
+        let events = [];
+
+        if (eventIds.length > 0) {
+            const rawEvents = await Event.find({
+                _id: { $in: eventIds },
+                status: 'published',
+                registrationDeadline: { $gte: new Date() }
+            }).populate('organizer', 'organizerName category');
+
+            // Preserve ranking sequence from aggregation
+            events = eventIds.map(id => rawEvents.find(e => e._id.toString() === id.toString())).filter(Boolean);
+        }
+
+        // Backfill remaining slots up to 5 with historically popular events if recent data is sparse
+        if (events.length < 5) {
+            const fallbackEvents = await Event.find({
+                _id: { $nin: eventIds },
+                status: 'published',
+                registrationDeadline: { $gte: new Date() }
+            })
+                .populate('organizer', 'organizerName category')
+                .sort({ registrationCount: -1, viewCount: -1 })
+                .limit(5 - events.length);
+
+            events = [...events, ...fallbackEvents];
+        }
 
         res.json(events);
     } catch (error) {

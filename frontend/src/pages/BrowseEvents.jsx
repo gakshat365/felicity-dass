@@ -30,22 +30,17 @@ const BrowseEvents = () => {
         try {
             setLoading(true);
 
-            // If followed-only filter is active and user is logged in
-            if (followedOnly && user) {
-                const { data } = await axios.get('/events/following');
-                setEvents(data);
-            } else {
-                const params = {};
-                if (filters.type !== 'all') params.type = filters.type;
-                if (filters.tags !== 'all') params.tags = filters.tags;
-                if (filters.eligibility !== 'all') params.eligibility = filters.eligibility;
-                if (filters.search) params.search = filters.search;
-                if (filters.startDate) params.startDate = filters.startDate;
-                if (filters.endDate) params.endDate = filters.endDate;
+            const params = {};
+            if (filters.type !== 'all') params.type = filters.type;
+            if (filters.tags !== 'all') params.tags = filters.tags;
+            if (filters.eligibility !== 'all') params.eligibility = filters.eligibility;
+            if (filters.search) params.search = filters.search;
+            if (filters.startDate) params.startDate = filters.startDate;
+            if (filters.endDate) params.endDate = filters.endDate;
+            if (followedOnly && user) params.followedOnly = 'true';
 
-                const { data } = await axios.get('/events', { params });
-                setEvents(data);
-            }
+            const { data } = await axios.get('/events', { params });
+            setEvents(data);
         } catch (error) {
             console.error('Error fetching events:', error);
         } finally {
