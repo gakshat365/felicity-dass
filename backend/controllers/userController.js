@@ -34,9 +34,13 @@ const calculateProfileCompleteness = (user) => {
  */
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id)
-            .select('-password')
-            .populate('following', 'organizerName category');
+        let query = User.findById(req.user._id).select('-password');
+
+        if (req.user.role === 'participant') {
+            query = query.populate('following', 'organizerName category');
+        }
+
+        const user = await query;
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -90,9 +94,13 @@ const updateProfile = async (req, res) => {
         await user.save();
 
         // Return updated user without password
-        const updatedUser = await User.findById(user._id)
-            .select('-password')
-            .populate('following', 'organizerName category');
+        let query = User.findById(user._id).select('-password');
+
+        if (user.role === 'participant') {
+            query = query.populate('following', 'organizerName category');
+        }
+
+        const updatedUser = await query;
 
         res.json(updatedUser);
     } catch (error) {
