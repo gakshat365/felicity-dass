@@ -27,9 +27,30 @@ const getForumMessages = async (req, res) => {
 
         const messages = await Message.find({ event: eventId, isDeleted: false })
             .populate('user', 'firstName lastName organizerName role')
-            .sort({ isPinned: -1, createdAt: 1 });
+            .sort({ isPinned: -1, createdAt: 1 })
+            .lean(); // Use lean to easily modify the returned objects
 
-        res.json(messages);
+        // Structure messages into threads
+        const parents = [];
+        const childrenMap = {};
+
+        messages.forEach(msg => {
+            if (!msg.parentId) {
+                msg.replies = [];
+                parents.push(msg);
+                childrenMap[msg._id.toString()] = msg;
+            } else {
+                if (!childrenMap[msg.parentId.toString()]) {
+                    childrenMap[msg.parentId.toString()] = { replies: [] };
+                }
+                if (!childrenMap[msg.parentId.toString()].replies) {
+                    childrenMap[msg.parentId.toString()].replies = [];
+                }
+                childrenMap[msg.parentId.toString()].replies.push(msg);
+            }
+        });
+
+        res.json(parents);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -68,6 +89,21 @@ const postMessage = async (req, res) => {
             parentId: parentId || null,
             isPinned: canPin ? !!isPinned : false
         });
+
+        // Offline Notification Logic
+        if (parentId) {
+            const parentMessage = await Message.findById(parentId).populate('user');
+            if (parentMessage && parentMessage.user._id.toString() !== user._id.toString()) {
+                const Notification = require('../models/Notification');
+                await Notification.create({
+                    user: parentMessage.user._id,
+                    type: 'forum_reply',
+                    title: 'New Reply in Forum',
+                    message: `${user.firstName || user.organizerName} replied to your message.`,
+                    link: `/events/${eventId}`
+                });
+            }
+        }
 
         const populatedMessage = await Message.findById(message._id)
             .populate('user', 'firstName lastName organizerName role');

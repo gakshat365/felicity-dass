@@ -60,6 +60,7 @@ const submitFeedback = async (req, res) => {
 const getEventFeedback = async (req, res) => {
     try {
         const { eventId } = req.params;
+        const { rating } = req.query; // Extract optional rating filter
         const userId = req.user._id;
         const userRole = req.user.role;
 
@@ -71,8 +72,13 @@ const getEventFeedback = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to view this feedback.' });
         }
 
-        // Fetch all feedback
-        const feedbackList = await Feedback.find({ event: eventId }).sort({ createdAt: -1 });
+        // Fetch feedback with optional rating filter
+        const query = { event: eventId };
+        if (rating) {
+            query.rating = Number(rating);
+        }
+
+        const feedbackList = await Feedback.find(query).sort({ createdAt: -1 });
 
         // Calculate Aggregates
         const total = feedbackList.length;
