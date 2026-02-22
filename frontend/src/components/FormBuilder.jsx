@@ -10,7 +10,8 @@ const FormBuilder = ({ fields, onChange }) => {
         { value: 'number', label: 'Number', icon: '🔢' },
         { value: 'dropdown', label: 'Dropdown', icon: '📋' },
         { value: 'checkbox', label: 'Checkboxes', icon: '☑️' },
-        { value: 'radio', label: 'Radio Buttons', icon: '🔘' }
+        { value: 'radio', label: 'Radio Buttons', icon: '🔘' },
+        { value: 'file', label: 'File Upload', icon: '📎' }
     ];
 
     const addField = (type) => {
@@ -232,6 +233,10 @@ const FormBuilder = ({ fields, onChange }) => {
                                             </label>
                                         ))}
                                     </div>
+                                )}
+
+                                {field.type === 'file' && (
+                                    <input type="file" disabled />
                                 )}
                             </div>
                         </div>

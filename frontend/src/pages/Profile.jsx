@@ -117,62 +117,10 @@ const Profile = () => {
             <header className="profile-header">
                 <div className="header-content">
                     <h1>Profile Settings</h1>
-                    <div className="header-actions">
-                        <button onClick={() => navigate('/dashboard')} className="btn btn-secondary btn-sm">
-                            Back to Dashboard
-                        </button>
-                        <button onClick={handleLogout} className="btn btn-secondary btn-sm">
-                            Logout
-                        </button>
-                    </div>
                 </div>
             </header>
 
             <div className="profile-main">
-                {/* Profile Completion Widget */}
-                <div className={`completion-widget ${getCompletionColor()}`}>
-                    <div className="completion-circle">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle
-                                cx="40"
-                                cy="40"
-                                r="35"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="6"
-                                opacity="0.2"
-                            />
-                            <circle
-                                cx="40"
-                                cy="40"
-                                r="35"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="6"
-                                strokeDasharray={`${2 * Math.PI * 35}`}
-                                strokeDashoffset={`${2 * Math.PI * 35 * (1 - profileCompletion / 100)}`}
-                                strokeLinecap="round"
-                                transform="rotate(-90 40 40)"
-                            />
-                            <text
-                                x="40"
-                                y="40"
-                                textAnchor="middle"
-                                dy="0.3em"
-                                fontSize="20"
-                                fontWeight="600"
-                                fill="currentColor"
-                            >
-                                {profileCompletion}%
-                            </text>
-                        </svg>
-                    </div>
-                    <div className="completion-text">
-                        <h3>Profile Completeness</h3>
-                        <p>Complete your profile to get better recommendations</p>
-                    </div>
-                </div>
-
                 {/* Profile Form */}
                 <div className="profile-card">
                     <div className="card-header">
@@ -332,22 +280,6 @@ const Profile = () => {
                                                 onChange={handleChange}
                                                 disabled={!editing}
                                             />
-                                            {formData.discordWebhookUrl && (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-secondary btn-sm"
-                                                    onClick={async () => {
-                                                        try {
-                                                            await axios.post('/users/test-webhook', { url: formData.discordWebhookUrl });
-                                                            toast.success('Test message sent to Discord!');
-                                                        } catch (error) {
-                                                            toast.error('Failed to send test message');
-                                                        }
-                                                    }}
-                                                >
-                                                    Test
-                                                </button>
-                                            )}
                                         </div>
                                         <span className="helper-text">Auto-post new events to your Discord channel</span>
                                     </div>

@@ -212,6 +212,36 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                             ))}
                                         </div>
                                     )}
+
+                                    {field.type === 'file' && (
+                                        <div className="file-upload-group">
+                                            <input
+                                                type="file"
+                                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file && file.size > 5 * 1024 * 1024) { // 5MB limit
+                                                        toast.error('File size should be less than 5MB');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    // In a real app, you'd upload this to S3/Cloudinary and store the URL
+                                                    // For this assignment, we'll store the filename to represent a successful upload
+                                                    if (file) {
+                                                        handleFormChange(field.label, `[File Uploaded] ${file.name}`);
+                                                        toast.success('File attached successfully (simulated)');
+                                                    } else {
+                                                        const currentData = { ...formData };
+                                                        delete currentData[field.label];
+                                                        setFormData(currentData);
+                                                    }
+                                                }}
+                                                required={field.required}
+                                                style={{ padding: '0.5rem 0' }}
+                                            />
+                                            <small className="help-text">Max size: 5MB. Accepted formats: PDF, DOC, JPG, PNG.</small>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

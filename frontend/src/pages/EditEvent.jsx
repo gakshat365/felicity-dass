@@ -147,7 +147,6 @@ const EditEvent = () => {
                         <span className={`status-badge status-${eventStatus}`} style={{ textTransform: 'capitalize' }}>
                             {eventStatus}
                         </span>
-                        <button onClick={() => navigate(-1)} className="btn btn-secondary btn-sm">Cancel</button>
                     </div>
                 </div>
             </header>

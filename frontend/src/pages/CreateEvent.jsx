@@ -197,9 +197,6 @@ const CreateEvent = () => {
             <header className="create-header">
                 <div className="header-content">
                     <h1>Create New Event</h1>
-                    <button onClick={() => navigate('/dashboard')} className="btn btn-secondary btn-sm">
-                        Cancel
-                    </button>
                 </div>
             </header>
 
@@ -373,6 +370,7 @@ const CreateEvent = () => {
                                             onChange={(e) => handleMerchandiseChange('variants', e.target.value)}
                                         />
                                     </div>
+                                    <small className="help-text">Note: The current schema handles total stock. Pricing/limits per individual variant will require future schema updates.</small>
                                 </>
                             )}
 

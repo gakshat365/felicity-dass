@@ -12,6 +12,7 @@ const OrganizerEventDetail = () => {
     const [registrations, setRegistrations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('participants');
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedReg, setSelectedReg] = useState(null);
     const [feedbackData, setFeedbackData] = useState({ stats: null, list: [] });
     const [feedbackFilter, setFeedbackFilter] = useState(0);
@@ -172,10 +173,12 @@ const OrganizerEventDetail = () => {
                     className={`tab-btn ${activeTab === 'participants' ? 'active' : ''}`}
                     onClick={() => setActiveTab('participants')}
                 >Participants</button>
-                <button
-                    className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('pending')}
-                >Pending Payments ({stats.pending})</button>
+                {(event && event.registrationFee > 0) && (
+                    <button
+                        className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('pending')}
+                    >Pending Payments ({stats.pending})</button>
+                )}
                 <button
                     className={`tab-btn ${activeTab === 'feedback' ? 'active' : ''}`}
                     onClick={() => setActiveTab('feedback')}
@@ -184,10 +187,21 @@ const OrganizerEventDetail = () => {
 
             {activeTab !== 'feedback' ? (
                 <div className="table-wrapper">
+                    <div className="table-controls" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+                        <input
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ padding: '0.5rem', width: '300px', borderRadius: '4px', border: '1px solid #30363d', background: '#0d1117', color: '#c9d1d9' }}
+                        />
+                    </div>
                     <table className="participants-table">
                         <thead>
                             <tr>
                                 <th>Participant</th>
+                                <th>Reg Date</th>
+                                <th>Team</th>
                                 <th>Status</th>
                                 <th>Payment</th>
                                 <th>Attendance</th>
@@ -198,6 +212,15 @@ const OrganizerEventDetail = () => {
                         <tbody>
                             {registrations
                                 .filter(r => activeTab === 'participants' || r.paymentStatus === 'proof_uploaded')
+                                .filter(r => {
+                                    if (!searchTerm) return true;
+                                    const term = searchTerm.toLowerCase();
+                                    return (
+                                        r.participant.firstName.toLowerCase().includes(term) ||
+                                        r.participant.lastName.toLowerCase().includes(term) ||
+                                        r.participant.email.toLowerCase().includes(term)
+                                    );
+                                })
                                 .map(reg => (
                                     <tr key={reg._id}>
                                         <td>
@@ -206,6 +229,8 @@ const OrganizerEventDetail = () => {
                                                 <span className="user-email">{reg.participant.email}</span>
                                             </div>
                                         </td>
+                                        <td>{format(new Date(reg.createdAt), 'MMM dd, yyyy')}</td>
+                                        <td>{reg.teamName || '-'}</td>
                                         <td><span className={`status-badge ${reg.status}`}>{reg.status}</span></td>
                                         <td>
                                             {reg.paymentStatus === 'proof_uploaded' ? (
