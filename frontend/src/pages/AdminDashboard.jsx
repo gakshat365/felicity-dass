@@ -230,26 +230,6 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="quick-actions">
-                            <h3>Quick Actions</h3>
-                            <div className="actions-grid">
-                                <button
-                                    onClick={() => setActiveTab('organizers')}
-                                    className="action-btn"
-                                >
-                                    <span className="action-icon">👥</span>
-                                    <span>Manage Organizers</span>
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('events')}
-                                    className="action-btn"
-                                >
-                                    <span className="action-icon">🎉</span>
-                                    <span>View All Events</span>
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 )}
 
