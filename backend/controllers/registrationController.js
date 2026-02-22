@@ -82,21 +82,35 @@ const createRegistration = async (req, res) => {
         }
 
         // Check stock/limit and reserve
+        let countIncremented = false;
         if (event.type === 'merchandise') {
             if (event.stock !== undefined && event.stock <= 0) {
                 return res.status(400).json({ message: 'Item is out of stock' });
             }
-            // Reserve stock (decrement immediately)
-            event.stock -= 1;
-            await event.save();
+
+            // If merchandise is completely free, it confirms instantly, so we must decrement stock atomically NOW.
+            if (!event.registrationFee || event.registrationFee <= 0) {
+                const updatedEvent = await Event.findOneAndUpdate(
+                    { _id: eventId, stock: { $gt: 0 } },
+                    { $inc: { stock: -1 } },
+                    { new: true }
+                );
+                if (!updatedEvent) {
+                    return res.status(400).json({ message: 'Item is out of stock' });
+                }
+            }
+            // If Paid Merchandise, do NOT decrement stock here. Phase 4 mandates stock drops strictly on payment approval.
         } else if (event.registrationLimit) {
-            const currentTotal = await Registration.countDocuments({
-                event: eventId,
-                status: { $in: ['pending', 'confirmed'] }
-            });
-            if (currentTotal >= event.registrationLimit) {
+            // Atomic update to avoid TOCTOU race condition for normal events
+            const updatedEvent = await Event.findOneAndUpdate(
+                { _id: eventId, registrationCount: { $lt: event.registrationLimit } },
+                { $inc: { registrationCount: 1 } },
+                { new: true }
+            );
+            if (!updatedEvent) {
                 return res.status(400).json({ message: 'Registration limit reached' });
             }
+            countIncremented = true;
         }
 
         // Create registration
@@ -137,10 +151,12 @@ const createRegistration = async (req, res) => {
             await registration.save();
         }
 
-        // Update event registration count
-        await Event.findByIdAndUpdate(eventId, {
-            $inc: { registrationCount: 1 }
-        });
+        // Update event registration count if not already handled by atomic limit checks
+        if (!countIncremented) {
+            await Event.findByIdAndUpdate(eventId, {
+                $inc: { registrationCount: 1 }
+            });
+        }
 
         // Populate for response
         await registration.populate('event participant');
@@ -266,6 +282,11 @@ const uploadPaymentProofHandler = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
 
+        // Check strict state flow
+        if (registration.status !== 'pending') {
+            return res.status(400).json({ message: 'Payment proof can only be uploaded for pending registrations' });
+        }
+
         // Check if payment is required
         if (!registration.paymentRequired) {
             return res.status(400).json({ message: 'Payment not required for this event' });
@@ -320,6 +341,20 @@ const approvePayment = async (req, res) => {
 
         if (!isOrganizer && !isAdmin) {
             return res.status(403).json({ message: 'Access denied' });
+        }
+
+        // Handle Merchandise Stock Expiration Atomic Decrement
+        if (registration.registrationType === 'merchandise') {
+            const updatedEvent = await Event.findOneAndUpdate(
+                { _id: registration.event._id, stock: { $gt: 0 } },
+                { $inc: { stock: -1 } },
+                { new: true }
+            );
+            if (!updatedEvent) {
+                return res.status(400).json({
+                    message: 'Out of stock! Cannot approve this payment. Event inventory is empty.'
+                });
+            }
         }
 
         // Update payment status
@@ -378,13 +413,6 @@ const rejectPayment = async (req, res) => {
         registration.paymentRejectionReason = reason || 'Payment proof invalid';
         await registration.save();
 
-        // Restore stock if it was merchandise
-        if (registration.registrationType === 'merchandise') {
-            await Event.findByIdAndUpdate(registration.event, {
-                $inc: { stock: 1 }
-            });
-        }
-
         // Send rejection email
         await sendPaymentRejectionEmail(registration.participant, registration.event, reason);
 
@@ -415,7 +443,13 @@ const cancelRegistration = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
 
-        // Check if already cancelled
+        // Check strict cancellation conditions to protect analytics and flow
+        if (registration.attendanceMarked) {
+            return res.status(400).json({ message: 'Cannot cancel a registration that has already been attended' });
+        }
+        if (registration.paymentRequired && registration.status === 'confirmed') {
+            return res.status(400).json({ message: 'Cannot self-cancel a confirmed paid registration without a manual refund' });
+        }
         if (registration.status === 'cancelled') {
             return res.status(400).json({ message: 'Registration already cancelled' });
         }
@@ -424,8 +458,8 @@ const cancelRegistration = async (req, res) => {
         registration.status = 'cancelled';
         await registration.save();
 
-        // Restore stock if it was merchandise
-        if (registration.registrationType === 'merchandise') {
+        // Restore stock ONLY if it was completely free merchandise that instantly bypassed the pending queue
+        if (registration.registrationType === 'merchandise' && !registration.paymentRequired) {
             await Event.findByIdAndUpdate(registration.event, {
                 $inc: { stock: 1 }
             });

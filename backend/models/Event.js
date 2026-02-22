@@ -20,8 +20,8 @@ const eventSchema = mongoose.Schema({
     },
     eligibilityCustom: { type: String }, // For custom eligibility text
 
-    registrationLimit: { type: Number }, // Max participants
-    registrationFee: { type: Number, default: 0 },
+    registrationLimit: { type: Number, min: 0 }, // Max participants
+    registrationFee: { type: Number, default: 0, min: 0 },
 
     // Tags (from interest areas + "other")
     tags: [{
@@ -64,15 +64,15 @@ const eventSchema = mongoose.Schema({
         colors: [{ type: String }],
         variants: [{ type: String }]
     },
-    stock: { type: Number }, // Total available quantity
-    purchaseLimitPerUser: { type: Number }, // Max items per participant
+    stock: { type: Number, min: 0 }, // Total available quantity
+    purchaseLimitPerUser: { type: Number, min: 0 }, // Max items per participant
 
     // Payment
     upiId: { type: String }, // UPI ID for payment
 
     // Analytics (denormalized for performance)
-    registrationCount: { type: Number, default: 0 },
-    viewCount: { type: Number, default: 0 },
+    registrationCount: { type: Number, default: 0, min: 0 },
+    viewCount: { type: Number, default: 0, min: 0 },
 
 }, { timestamps: true });
 
