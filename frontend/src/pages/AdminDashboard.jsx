@@ -16,10 +16,8 @@ const AdminDashboard = () => {
         totalOrganizers: 0,
         totalParticipants: 0,
         totalEvents: 0,
-        totalRegistrations: 0,
-        pendingOrganizers: 0
+        totalRegistrations: 0
     });
-    const [pendingOrganizers, setPendingOrganizers] = useState([]);
     const [allOrganizers, setAllOrganizers] = useState([]);
     const [allEvents, setAllEvents] = useState([]);
     const [passwordRequests, setPasswordRequests] = useState([]);
@@ -49,7 +47,6 @@ const AdminDashboard = () => {
 
             setStats(statsRes.data);
             setAllOrganizers(organizersRes.data);
-            setPendingOrganizers(organizersRes.data.filter(o => o.approvalStatus === 'pending'));
             setAllEvents(eventsRes.data);
             setPasswordRequests(recoveryRes.data);
         } catch (error) {
@@ -170,12 +167,6 @@ const AdminDashboard = () => {
                         Overview
                     </button>
                     <button
-                        className={`tab ${activeTab === 'pending' ? 'tab-active' : ''}`}
-                        onClick={() => setActiveTab('pending')}
-                    >
-                        Pending Approvals ({pendingOrganizers.length})
-                    </button>
-                    <button
                         className={`tab ${activeTab === 'organizers' ? 'tab-active' : ''}`}
                         onClick={() => setActiveTab('organizers')}
                     >
@@ -238,30 +229,11 @@ const AdminDashboard = () => {
                                     <div className="stat-label">Registrations</div>
                                 </div>
                             </div>
-
-                            <div className="stat-card highlight">
-                                <div className="stat-icon">⏳</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{stats.pendingOrganizers}</div>
-                                    <div className="stat-label">Pending Approvals</div>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="quick-actions">
                             <h3>Quick Actions</h3>
                             <div className="actions-grid">
-                                <button
-                                    onClick={() => setActiveTab('pending')}
-                                    className="action-btn"
-                                    disabled={pendingOrganizers.length === 0}
-                                >
-                                    <span className="action-icon">✅</span>
-                                    <span>Review Pending Organizers</span>
-                                    {pendingOrganizers.length > 0 && (
-                                        <span className="action-badge">{pendingOrganizers.length}</span>
-                                    )}
-                                </button>
                                 <button
                                     onClick={() => setActiveTab('organizers')}
                                     className="action-btn"
@@ -278,69 +250,6 @@ const AdminDashboard = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {/* Pending Approvals Tab */}
-                {activeTab === 'pending' && (
-                    <div className="tab-content">
-                        {pendingOrganizers.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-icon">✅</div>
-                                <p>No pending organizer approvals</p>
-                            </div>
-                        ) : (
-                            <div className="organizers-grid">
-                                {pendingOrganizers.map(org => (
-                                    <div key={org._id} className="organizer-card pending">
-                                        <div className="card-header">
-                                            <h4>{org.organizerName}</h4>
-                                            <span className="status-badge status-pending">Pending</span>
-                                        </div>
-                                        <div className="card-body">
-                                            <div className="info-row">
-                                                <span className="info-label">Email:</span>
-                                                <span className="info-value">{org.email}</span>
-                                            </div>
-                                            <div className="info-row">
-                                                <span className="info-label">Category:</span>
-                                                <span className="info-value">{org.category}</span>
-                                            </div>
-                                            <div className="info-row">
-                                                <span className="info-label">Contact:</span>
-                                                <span className="info-value">{org.contactEmail}</span>
-                                            </div>
-                                            {org.description && (
-                                                <div className="info-row">
-                                                    <span className="info-label">Description:</span>
-                                                    <p className="description">{org.description}</p>
-                                                </div>
-                                            )}
-                                            <div className="info-row">
-                                                <span className="info-label">Registered:</span>
-                                                <span className="info-value">
-                                                    {format(new Date(org.createdAt), 'MMM dd, yyyy')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="card-actions">
-                                            <button
-                                                onClick={() => handleRejectOrganizer(org._id)}
-                                                className="btn btn-danger btn-sm"
-                                            >
-                                                Reject
-                                            </button>
-                                            <button
-                                                onClick={() => handleApproveOrganizer(org._id)}
-                                                className="btn btn-success btn-sm"
-                                            >
-                                                Approve
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 )}
 
