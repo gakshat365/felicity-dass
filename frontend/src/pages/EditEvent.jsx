@@ -33,6 +33,30 @@ const EditEvent = () => {
     });
     const [tagInput, setTagInput] = useState('');
 
+    const TAG_OPTIONS = ['dance', 'music', 'coding', 'hacking', 'opensource', 'quantum', 'art', 'other'];
+
+    const toggleTag = (tag) => {
+        setFormData(prev => ({
+            ...prev,
+            tags: prev.tags.includes(tag)
+                ? prev.tags.filter(t => t !== tag)
+                : [...prev.tags, tag]
+        }));
+    };
+
+    const typeMap = {
+        text: 'short',
+        textarea: 'long',
+        number: 'number',
+        radio: 'mcq-single',
+        dropdown: 'mcq-single',
+        checkbox: 'mcq-multiple',
+        short: 'short',
+        long: 'long',
+        'mcq-single': 'mcq-single',
+        'mcq-multiple': 'mcq-multiple',
+    };
+
     useEffect(() => {
         fetchEvent();
     }, [id]);
@@ -94,16 +118,7 @@ const EditEvent = () => {
         }));
     };
 
-    const addTag = () => {
-        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-            setFormData(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
-            setTagInput('');
-        }
-    };
 
-    const removeTag = (tagToRemove) => {
-        setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
-    };
 
     const handleFormBuilderChange = (fields) => {
         setFormData(prev => ({ ...prev, customForm: fields }));
@@ -112,8 +127,20 @@ const EditEvent = () => {
     const handleSave = async (newStatus) => {
         setSaving(true);
         try {
+            const mappedForm = formData.customForm.map((field, index) => ({
+                questionId: field.questionId || field.id || `field_${Date.now()}_${index}`,
+                questionText: field.questionText || field.label || `Question ${index + 1}`,
+                questionType: typeMap[field.questionType] || typeMap[field.type] || 'short',
+                required: field.required || false,
+                options: field.options || [],
+                wordLimit: (field.type === 'text' || field.questionType === 'short') ? 50
+                    : (field.type === 'textarea' || field.questionType === 'long') ? 200 : undefined,
+                order: index + 1,
+            }));
+
             const eventData = {
                 ...formData,
+                customForm: mappedForm,
                 status: newStatus || eventStatus,
                 registrationFee: parseFloat(formData.registrationFee) || 0,
                 registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
@@ -213,9 +240,9 @@ const EditEvent = () => {
                             <select name="eligibility" value={formData.eligibility} onChange={handleChange}
                                 disabled={isReadOnly || isPublished || isOngoing}>
                                 <option value="All">All</option>
-                                <option value="IIIT Students">IIIT Students Only</option>
+                                <option value="IIIT Students Only">IIIT Students Only</option>
                                 <option value="IIIT Community">IIIT Community</option>
-                                <option value="Outside IIIT">Outside IIIT</option>
+                                <option value="Outside IIIT Only">Outside IIIT Only</option>
                                 <option value="Custom">Custom</option>
                             </select>
                         </div>
@@ -282,25 +309,23 @@ const EditEvent = () => {
                         </div>
                     )}
 
-                    {/* Tags */}
                     <div className="form-step">
                         <h2>Tags</h2>
                         <div className="form-group">
-                            <div className="tag-input-container">
-                                <input type="text" value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                                    placeholder="Add tags (press Enter)"
-                                    disabled={isReadOnly} />
-                                <button type="button" onClick={addTag} className="btn btn-secondary btn-sm"
-                                    disabled={isReadOnly}>Add</button>
-                            </div>
-                            <div className="tags-display">
-                                {formData.tags.map(tag => (
-                                    <span key={tag} className="tag">
+                            <div className="tag-checkbox-grid">
+                                {TAG_OPTIONS.map(tag => (
+                                    <label
+                                        key={tag}
+                                        className={`tag-checkbox-item ${formData.tags.includes(tag) ? 'selected' : ''} ${isReadOnly ? 'disabled' : ''}`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.tags.includes(tag)}
+                                            onChange={() => !isReadOnly && toggleTag(tag)}
+                                            disabled={isReadOnly}
+                                        />
                                         {tag}
-                                        {!isReadOnly && <button onClick={() => removeTag(tag)}>&times;</button>}
-                                    </span>
+                                    </label>
                                 ))}
                             </div>
                         </div>

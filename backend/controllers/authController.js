@@ -110,14 +110,50 @@ const loginUser = async (req, res) => {
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res) => {
-    const { _id, firstName, lastName, email, role } = await User.findById(req.user.id);
-    res.status(200).json({
-        id: _id,
-        firstName,
-        lastName,
-        email,
-        role,
-    });
+    const user = await User.findById(req.user.id)
+        .populate('following', 'organizerName category _id');
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const base = {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        contactNumber: user.contactNumber,
+        status: user.status,
+    };
+
+    if (user.role === 'participant') {
+        return res.status(200).json({
+            ...base,
+            participantType: user.participantType,
+            interests: user.interests,
+            following: user.following,
+            collegeName: user.collegeName,
+            profileCompleteness: user.profileCompleteness,
+            onboardingCompleted: user.onboardingCompleted,
+            onboardingSkipped: user.onboardingSkipped,
+        });
+    }
+
+    if (user.role === 'organizer') {
+        return res.status(200).json({
+            ...base,
+            organizerName: user.organizerName,
+            category: user.category,
+            description: user.description,
+            contactEmail: user.contactEmail,
+            discordWebhookUrl: user.discordWebhookUrl,
+            followerCount: user.followerCount,
+            isApproved: user.isApproved,
+            approvalStatus: user.approvalStatus,
+        });
+    }
+
+    // admin
+    return res.status(200).json(base);
 };
 
 const PasswordResetRequest = require('../models/PasswordResetRequest');

@@ -42,11 +42,11 @@ const createEvent = async (req, res) => {
             return res.status(400).json({ message: 'Custom form cannot have more than 25 questions' });
         }
 
-        // Process custom form
+        // Process custom form - ensure every field has a questionId
         if (customForm && customForm.length > 0) {
             customForm.forEach((field, index) => {
-                if (!field.id) {
-                    field.id = `field_${Date.now()}_${index}`;
+                if (!field.questionId) {
+                    field.questionId = `field_${Date.now()}_${index}`;
                 }
             });
         }
@@ -612,12 +612,17 @@ const getOrganizerStats = async (req, res) => {
         const Registration = require('../models/Registration');
 
         const registrations = await Registration.find({
-            event: { $in: events.map(e => e._id) }
-        });
+            event: { $in: events.map(e => e._id) },
+        }).populate('event', 'registrationFee');
+
+        // Revenue = sum of (registrationFee × confirmed paid registrations per event)
+        const totalRevenue = registrations
+            .filter(r => r.status === 'confirmed' && r.paymentRequired)
+            .reduce((acc, r) => acc + (r.paymentAmount || r.event?.registrationFee || 0), 0);
 
         const stats = {
             totalRegistrations: registrations.length,
-            totalRevenue: events.reduce((acc, curr) => acc + (curr.revenue || 0), 0),
+            totalRevenue,
             activeEvents: events.filter(e => e.status === 'published' || e.status === 'ongoing').length,
             averageAttendance: registrations.length > 0
                 ? Math.round((registrations.filter(r => r.attendanceMarked).length / registrations.length) * 100)

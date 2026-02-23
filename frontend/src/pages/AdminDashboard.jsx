@@ -289,9 +289,8 @@ const AdminDashboard = () => {
                                                 style={{ width: '100%', padding: '10px', background: '#0d1117', border: '1px solid #30363d', borderRadius: '6px', color: '#c9d1d9' }}>
                                                 <option value="">Select category</option>
                                                 <option value="club">Club</option>
-                                                <option value="fest">Fest Team</option>
-                                                <option value="department">Department</option>
-                                                <option value="other">Other</option>
+                                                <option value="council">Council</option>
+                                                <option value="fest-team">Fest Team</option>
                                             </select>
                                         </div>
                                         <div className="form-group">
@@ -336,7 +335,7 @@ const AdminDashboard = () => {
                                             <td>{org.eventsCount || 0}</td>
                                             <td>{format(new Date(org.createdAt), 'MMM dd, yyyy')}</td>
                                             <td>
-                                                {org.approvalStatus === 'approved' && (
+                                                {org.approvalStatus === 'approved' ? (
                                                     <div className="table-actions">
                                                         <button
                                                             onClick={() => handleToggleOrganizerStatus(org._id, org.status)}
@@ -348,6 +347,38 @@ const AdminDashboard = () => {
                                                             onClick={() => handleDeleteOrganizer(org._id)}
                                                             className="btn btn-sm btn-danger"
                                                             title="Delete Permanently"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
+                                                ) : org.approvalStatus === 'pending' ? (
+                                                    <div className="table-actions">
+                                                        <button
+                                                            onClick={() => handleApproveOrganizer(org._id)}
+                                                            className="btn btn-sm btn-success"
+                                                        >
+                                                            ✓ Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRejectOrganizer(org._id)}
+                                                            className="btn btn-sm btn-warning"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteOrganizer(org._id)}
+                                                            className="btn btn-sm btn-danger"
+                                                            title="Delete"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="table-actions">
+                                                        <button
+                                                            onClick={() => handleDeleteOrganizer(org._id)}
+                                                            className="btn btn-sm btn-danger"
+                                                            title="Delete"
                                                         >
                                                             🗑️
                                                         </button>

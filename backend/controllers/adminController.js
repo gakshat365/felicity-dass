@@ -151,6 +151,15 @@ const createOrganizer = async (req, res) => {
     try {
         const { email, organizerName, category, description } = req.body;
 
+        // Validate organizer email domain per Phase 1 requirements
+        const { validateOrganizerEmail } = require('../utils/emailValidator');
+        const emailCheck = validateOrganizerEmail(email);
+        if (!emailCheck.valid) {
+            return res.status(400).json({
+                message: `Invalid organizer email domain. ${emailCheck.message}`
+            });
+        }
+
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });

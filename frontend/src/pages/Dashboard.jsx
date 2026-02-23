@@ -13,6 +13,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [recentRegistrations, setRecentRegistrations] = useState([]);
+    const [forYouEvents, setForYouEvents] = useState([]);
     const [loadingEvents, setLoadingEvents] = useState(true);
 
     useEffect(() => {
@@ -23,12 +24,14 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const [eventsRes, regsRes] = await Promise.all([
+            const [eventsRes, regsRes, forYouRes] = await Promise.all([
                 axios.get('/registrations/my-registrations?type=upcoming'),
-                axios.get('/registrations/my-registrations?type=completed')
+                axios.get('/registrations/my-registrations?type=completed'),
+                axios.get('/events/for-you').catch(() => ({ data: [] })) // graceful fallback
             ]);
             setUpcomingEvents(eventsRes.data.slice(0, 4));
             setRecentRegistrations(regsRes.data.slice(0, 4));
+            setForYouEvents(forYouRes.data.slice(0, 4));
         } catch (error) {
             console.error('Dashboard data fetch error:', error);
         } finally {
@@ -50,6 +53,46 @@ const Dashboard = () => {
 
             <main className="dashboard-main">
                 <ProfileBanner />
+
+                {/* For You — Personalised by interests (Phase 2 requirement) */}
+                {user?.interests?.length > 0 ? (
+                    <div className="dashboard-section">
+                        <div className="section-header">
+                            <h2>✨ For You</h2>
+                            <button className="see-all-btn" onClick={() => navigate('/events')}>Browse All →</button>
+                        </div>
+                        {forYouEvents.length > 0 ? (
+                            <div className="upcoming-grid">
+                                {forYouEvents.map(event => (
+                                    <div key={event._id} className="upcoming-card" onClick={() => navigate(`/events/${event._id}`)}>
+                                        <div className="upcoming-card-header">
+                                            <span className="event-type-tag">{event.type}</span>
+                                            {event.tags?.slice(0, 2).map(tag => (
+                                                <span key={tag} className="interest-tag">#{tag}</span>
+                                            ))}
+                                        </div>
+                                        <h4>{event.name}</h4>
+                                        <p className="upcoming-date">📅 {event.startDate ? format(new Date(event.startDate), 'MMM dd, yyyy') : 'TBD'}</p>
+                                        <p className="upcoming-organizer">by {event.organizer?.organizerName || 'Unknown'}</p>
+                                        <span className="upcoming-status confirmed">Open</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="empty-section">
+                                <p>No upcoming events match your interests right now.</p>
+                                <button className="btn btn-primary btn-sm" onClick={() => navigate('/events')}>Browse All Events</button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="dashboard-section">
+                        <div className="info-box" style={{ marginBottom: 0 }}>
+                            <h3>✨ For You</h3>
+                            <p>Set your interests on your <span style={{ color: 'var(--accent)', cursor: 'pointer' }} onClick={() => navigate('/profile')}>Profile</span> to get personalised event recommendations.</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Upcoming Events Section */}
                 <div className="dashboard-section">

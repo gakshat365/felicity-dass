@@ -28,19 +28,26 @@ const OrganizerDashboard = () => {
             setLoading(true);
             const [eventsRes, statsRes] = await Promise.all([
                 axios.get('/events/organizer/my-events'),
-                axios.get('/events/organizer/stats') // I need to implement this endpoint
+                axios.get('/events/organizer/stats')
             ]);
             setEvents(eventsRes.data);
             setStats(statsRes.data);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-            // Fallback for stats if endpoint not yet ready
-            setStats({
-                totalRegistrations: events.reduce((acc, curr) => acc + (curr.registrationCount || 0), 0),
-                totalRevenue: events.reduce((acc, curr) => acc + (curr.revenue || 0), 0),
-                averageAttendance: 0,
-                activeEvents: events.filter(e => e.status === 'published' || e.status === 'ongoing').length
-            });
+            // Fetch events only if stats endpoint failed
+            try {
+                const eventsRes = await axios.get('/events/organizer/my-events');
+                const fetchedEvents = eventsRes.data;
+                setEvents(fetchedEvents);
+                setStats({
+                    totalRegistrations: fetchedEvents.reduce((acc, e) => acc + (e.registrationCount || 0), 0),
+                    totalRevenue: fetchedEvents.reduce((acc, e) => acc + (e.revenue || 0), 0),
+                    averageAttendance: 0,
+                    activeEvents: fetchedEvents.filter(e => e.status === 'published' || e.status === 'ongoing').length
+                });
+            } catch (innerError) {
+                console.error('Failed to fetch events:', innerError);
+            }
         } finally {
             setLoading(false);
         }

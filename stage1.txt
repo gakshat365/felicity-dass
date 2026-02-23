@@ -4,7 +4,7 @@
 *   **Test Case 1 (Positive):** Register a new **IIIT Student** with an `@students.iiit.ac.in` email.
     *   **Expected Result:** Successful registration, redirects to dashboard, profile shows `Participant Type: IIIT Student`.
 *   **Test Case 2 (Positive):** Register a new **Prof/Staff** with an `@iiit.ac.in` email.
-    *   **Expected Result:** Successful registration, profile shows `Participant Type: IIIT Community`.
+    *   **Expected Result:** Successful registration, profile shows `Participant Type: IIIT Professor`.
 *   **Test Case 3 (Positive):** Register an **Outside Participant** with a Gmail/Yahoo email.
     *   **Expected Result:** Successful registration, profile shows `Participant Type: Outside IIIT`.
 *   **Test Case 4 (Negative):** Attempt to register with an already existing email.

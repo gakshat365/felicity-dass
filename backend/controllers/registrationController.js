@@ -42,6 +42,12 @@ const createRegistration = async (req, res) => {
         const { eventId, teamName, formResponses, merchandiseDetails } = req.body;
         const participantId = req.user._id;
 
+        // Validate eventId format before hitting DB
+        const mongoose = require('mongoose');
+        if (!eventId || !mongoose.Types.ObjectId.isValid(eventId)) {
+            return res.status(400).json({ message: 'Invalid Event ID' });
+        }
+
         // Get event details
         const event = await Event.findById(eventId).populate('organizer');
         if (!event) {
@@ -67,6 +73,25 @@ const createRegistration = async (req, res) => {
 
         if (existingRegistration) {
             return res.status(400).json({ message: 'You are already registered for this event' });
+        }
+
+        // Check eligibility
+        if (event.eligibility !== 'All' && event.eligibility !== 'Custom') {
+            const participant = await User.findById(participantId);
+            const pType = participant?.participantType; // 'IIIT Student', 'IIIT Professor', 'Outside IIIT'
+
+            const isIIITMember = pType === 'IIIT Student' || pType === 'IIIT Professor';
+            const isOutsideIIIT = pType === 'Outside IIIT';
+
+            if (event.eligibility === 'IIIT Students Only' && !isIIITMember) {
+                return res.status(403).json({ message: 'This event is open to IIIT Students and Faculty only.' });
+            }
+            if (event.eligibility === 'IIIT Community' && !isIIITMember) {
+                return res.status(403).json({ message: 'This event is open to the IIIT community only.' });
+            }
+            if (event.eligibility === 'Outside IIIT Only' && !isOutsideIIIT) {
+                return res.status(403).json({ message: 'This event is open to participants outside IIIT only.' });
+            }
         }
 
         // Validate custom form word counts
@@ -548,6 +573,7 @@ const markAttendance = async (req, res) => {
 
         // Mark attendance
         registration.attendanceMarked = true;
+        registration.attendanceStatus = 'Present';
         registration.attendanceMarkedAt = new Date();
         registration.attendanceMarkedBy = req.user._id;
         await registration.save();

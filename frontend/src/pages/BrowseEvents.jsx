@@ -10,6 +10,7 @@ const BrowseEvents = () => {
     const { user } = useContext(AuthContext);
     const [events, setEvents] = useState([]);
     const [trendingEvents, setTrendingEvents] = useState([]);
+    const [endingSoonEvents, setEndingSoonEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [followedOnly, setFollowedOnly] = useState(false);
     const [filters, setFilters] = useState({
@@ -24,6 +25,7 @@ const BrowseEvents = () => {
     useEffect(() => {
         fetchEvents();
         fetchTrending();
+        fetchEndingSoon();
     }, [filters, followedOnly]);
 
     const fetchEvents = async () => {
@@ -38,6 +40,7 @@ const BrowseEvents = () => {
             if (filters.startDate) params.startDate = filters.startDate;
             if (filters.endDate) params.endDate = filters.endDate;
             if (followedOnly && user) params.followedOnly = 'true';
+            else params.status = 'published,ongoing'; // show live events too
 
             const { data } = await axios.get('/events', { params });
             setEvents(data);
@@ -57,6 +60,15 @@ const BrowseEvents = () => {
         }
     };
 
+    const fetchEndingSoon = async () => {
+        try {
+            const { data } = await axios.get('/events/ending-soon');
+            setEndingSoonEvents(data.slice(0, 5));
+        } catch (error) {
+            console.error('Error fetching ending soon:', error);
+        }
+    };
+
     const handleFilterChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
@@ -71,7 +83,7 @@ const BrowseEvents = () => {
             {/* Trending Section */}
             {trendingEvents.length > 0 && (
                 <section className="trending-section">
-                    <h2> Trending Now </h2>
+                    <h2>🔥 Trending Now</h2>
                     <div className="trending-scroll">
                         {trendingEvents.map(event => (
                             <div key={event._id} className="trending-card" onClick={() => navigate(`/events/${event._id}`)}>
@@ -80,6 +92,27 @@ const BrowseEvents = () => {
                                 <p>{event.registrationCount} candidates registered</p>
                             </div>
                         ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Ending Soon Section */}
+            {endingSoonEvents.length > 0 && (
+                <section className="trending-section ending-soon-section">
+                    <h2>⏰ Ending Soon</h2>
+                    <div className="trending-scroll">
+                        {endingSoonEvents.map(event => {
+                            const daysLeft = Math.ceil((new Date(event.registrationDeadline) - new Date()) / (1000 * 60 * 60 * 24));
+                            return (
+                                <div key={event._id} className="trending-card ending-soon-card" onClick={() => navigate(`/events/${event._id}`)}>
+                                    <div className="trending-badge ending-badge">
+                                        {daysLeft <= 1 ? '🔴 Ends Today!' : `⏳ ${daysLeft}d left`}
+                                    </div>
+                                    <h4>{event.name}</h4>
+                                    <p>by {event.organizer?.organizerName}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </section>
             )}
@@ -132,6 +165,9 @@ const BrowseEvents = () => {
                             <option value="coding">Coding</option>
                             <option value="hacking">Hacking</option>
                             <option value="art">Art</option>
+                            <option value="opensource">Open Source</option>
+                            <option value="quantum">Quantum</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
 

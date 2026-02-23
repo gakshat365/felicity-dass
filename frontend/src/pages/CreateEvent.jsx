@@ -45,7 +45,18 @@ const CreateEvent = () => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [tagInput, setTagInput] = useState('');
+
+    // Valid tag options (must match backend enum exactly)
+    const TAG_OPTIONS = ['dance', 'music', 'coding', 'hacking', 'opensource', 'quantum', 'art', 'other'];
+
+    const toggleTag = (tag) => {
+        setFormData(prev => ({
+            ...prev,
+            tags: prev.tags.includes(tag)
+                ? prev.tags.filter(t => t !== tag)
+                : [...prev.tags, tag]
+        }));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -65,22 +76,7 @@ const CreateEvent = () => {
         }));
     };
 
-    const addTag = () => {
-        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-            setFormData(prev => ({
-                ...prev,
-                tags: [...prev.tags, tagInput.trim()]
-            }));
-            setTagInput('');
-        }
-    };
 
-    const removeTag = (tagToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            tags: prev.tags.filter(tag => tag !== tagToRemove)
-        }));
-    };
 
     const handleFormBuilderChange = (fields) => {
         setFormData(prev => ({
@@ -147,13 +143,35 @@ const CreateEvent = () => {
         setStep(prev => Math.max(prev - 1, 1));
     };
 
+    // Map FormBuilder internal field type → backend questionType enum
+    const typeMap = {
+        text: 'short',
+        textarea: 'long',
+        number: 'number',
+        radio: 'mcq-single',
+        dropdown: 'mcq-single',
+        checkbox: 'mcq-multiple',
+    };
+
     const handleSubmit = async (status = 'draft') => {
         if (!validateStep(step)) return;
 
         setLoading(true);
         try {
+            // Transform FormBuilder fields into backend schema shape
+            const mappedForm = formData.customForm.map((field, index) => ({
+                questionId: field.id || `field_${Date.now()}_${index}`,
+                questionText: field.label || `Question ${index + 1}`,
+                questionType: typeMap[field.type] || 'short',
+                required: field.required || false,
+                options: field.options || [],
+                wordLimit: field.type === 'text' ? 50 : field.type === 'textarea' ? 200 : undefined,
+                order: index + 1,
+            }));
+
             const eventData = {
                 ...formData,
+                customForm: mappedForm,
                 status,
                 registrationFee: parseFloat(formData.registrationFee) || 0,
                 registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
@@ -287,9 +305,9 @@ const CreateEvent = () => {
                                 <label>Eligibility *</label>
                                 <select name="eligibility" value={formData.eligibility} onChange={handleChange}>
                                     <option value="All">All</option>
-                                    <option value="IIIT Students">IIIT Students Only</option>
+                                    <option value="IIIT Students Only">IIIT Students Only</option>
                                     <option value="IIIT Community">IIIT Community</option>
-                                    <option value="Outside IIIT">Outside IIIT</option>
+                                    <option value="Outside IIIT Only">Outside IIIT Only</option>
                                     <option value="Custom">Custom</option>
                                 </select>
                             </div>
@@ -467,27 +485,24 @@ const CreateEvent = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Tags</label>
-                                <div className="tag-input-container">
-                                    <input
-                                        type="text"
-                                        value={tagInput}
-                                        onChange={(e) => setTagInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                                        placeholder="Add tags (press Enter)"
-                                    />
-                                    <button type="button" onClick={addTag} className="btn btn-secondary btn-sm">
-                                        Add
-                                    </button>
-                                </div>
-                                <div className="tags-display">
-                                    {formData.tags.map(tag => (
-                                        <span key={tag} className="tag">
+                                <label>Tags <span style={{ fontWeight: 400, fontSize: '0.85em', color: '#8b949e' }}>(select all that apply)</span></label>
+                                <div className="tag-checkbox-grid">
+                                    {TAG_OPTIONS.map(tag => (
+                                        <label key={tag} className={`tag-checkbox-item ${formData.tags.includes(tag) ? 'selected' : ''}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.tags.includes(tag)}
+                                                onChange={() => toggleTag(tag)}
+                                            />
                                             {tag}
-                                            <button onClick={() => removeTag(tag)}>&times;</button>
-                                        </span>
+                                        </label>
                                     ))}
                                 </div>
+                                {formData.tags.length > 0 && (
+                                    <p style={{ fontSize: '0.8rem', color: '#58a6ff', marginTop: '6px' }}>
+                                        Selected: {formData.tags.join(', ')}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}
