@@ -16,8 +16,12 @@ if (!fs.existsSync(uploadsDir)) {
 const app = express();
 const server = http.createServer(app);
 
-// Enable CORS for all routes
-app.use(cors());
+// Enable CORS — allow configured frontend origin in production, all in dev
+const allowedOrigin = process.env.FRONTEND_URL || '*';
+app.use(cors({
+    origin: allowedOrigin,
+    credentials: true,
+}));
 
 // Increase payload limit for Base64 images
 app.use(express.json({ limit: '50mb' }));
@@ -30,7 +34,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/dass-assign
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow all origins for simplicity
+        origin: process.env.FRONTEND_URL || '*',
         methods: ["GET", "POST"]
     }
 });

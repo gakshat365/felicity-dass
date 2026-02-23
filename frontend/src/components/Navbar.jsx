@@ -26,7 +26,8 @@ const Navbar = () => {
                 return (
                     <>
                         <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}>Dashboard</Link>
-                        <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`}>Manage Platform</Link>
+                        <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`}>Manage Organizers</Link>
+                        <Link to="/admin?tab=recovery" className={`nav-link`}>Password Resets</Link>
                         <Link to="/profile" className={`nav-link ${isActive('/profile') ? 'active' : ''}`}>Profile</Link>
                     </>
                 );

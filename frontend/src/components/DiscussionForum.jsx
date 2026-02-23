@@ -20,7 +20,7 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
         fetchMessages();
 
         // Socket setup
-        socketRef.current = io('http://localhost:5000');
+        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
         socketRef.current.emit('join_room', `forum_${eventId}`);
 
         socketRef.current.on('receive_message', (data) => {

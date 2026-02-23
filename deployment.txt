@@ -1,0 +1,107 @@
+DASS Events - Deployment Guide
+================================
+
+Deployed URLs (fill in after deployment):
+  Frontend:   [e.g. https://dass-events.vercel.app]
+  Backend:    [e.g. https://dass-events-api.onrender.com]
+  Database:   MongoDB Atlas
+
+Admin Credentials:
+  Email:    admin@iiit.ac.in
+  Password: [value of ADMIN_PASSWORD env var]
+
+---------------------------------------------------------
+STEP 1 — MongoDB Atlas
+---------------------------------------------------------
+1. Go to https://mongodb.com/cloud/atlas and create a free cluster.
+2. Create a database user (username + password).
+3. Under Network Access → Add IP Address → Allow from anywhere (0.0.0.0/0).
+4. Click Connect → Drivers → copy the connection string.
+   It looks like: mongodb+srv://user:pass@cluster.mongodb.net/dass-events
+
+---------------------------------------------------------
+STEP 2 — Cloudinary (for payment proof image uploads)
+---------------------------------------------------------
+1. Sign up at https://cloudinary.com (free tier is fine).
+2. From the dashboard, note your:
+   - Cloud Name
+   - API Key
+   - API Secret
+
+---------------------------------------------------------
+STEP 3 — Gmail App Password (for ticket/reset emails)
+---------------------------------------------------------
+1. Enable 2FA on your Google account.
+2. Go to https://myaccount.google.com/apppasswords
+3. Create an App Password for "Mail" → copy the 16-character code.
+
+---------------------------------------------------------
+STEP 4 — Deploy Backend to Render
+---------------------------------------------------------
+1. Push the repo to GitHub.
+2. Go to https://render.com → New → Web Service.
+3. Connect your GitHub repo.
+4. Settings:
+     Root Directory:  backend
+     Build Command:   npm install
+     Start Command:   npm start
+     Environment:     Node
+5. Add Environment Variables (Environment tab):
+     MONGO_URI            = <your Atlas connection string>
+     JWT_SECRET           = <random 32+ char string>
+     ADMIN_PASSWORD       = <choose a secure password>
+     FRONTEND_URL         = https://your-app.vercel.app   ← fill AFTER step 5
+     EMAIL_USER           = your_email@gmail.com
+     EMAIL_APP_PASSWORD   = <16-char app password>
+     CLOUDINARY_CLOUD_NAME = <from Cloudinary dashboard>
+     CLOUDINARY_API_KEY   = <from Cloudinary dashboard>
+     CLOUDINARY_API_SECRET = <from Cloudinary dashboard>
+     NODE_ENV             = production
+6. Click Deploy. Once live, copy your Render URL
+   (e.g. https://dass-events-api.onrender.com).
+
+NOTE: Free Render plans spin down after inactivity; first request takes ~30s.
+
+---------------------------------------------------------
+STEP 5 — Deploy Frontend to Vercel
+---------------------------------------------------------
+1. Go to https://vercel.com → New Project → import your GitHub repo.
+2. Set Root Directory to: frontend
+3. Framework Preset: Vite  (Vercel auto-detects this)
+4. Add Environment Variables:
+     VITE_API_URL    = https://dass-events-api.onrender.com/api
+     VITE_SOCKET_URL = https://dass-events-api.onrender.com
+     VITE_UPI_ID     = yourname@upi   (optional)
+5. Click Deploy.
+6. Copy your Vercel URL (e.g. https://dass-events.vercel.app).
+
+---------------------------------------------------------
+STEP 6 — Wire frontend URL into Render
+---------------------------------------------------------
+1. Go back to Render → your web service → Environment.
+2. Set FRONTEND_URL = https://dass-events.vercel.app  (your actual Vercel URL).
+3. Click Save Changes → the service redeploys automatically.
+
+---------------------------------------------------------
+STEP 7 — Seed the Admin Account
+---------------------------------------------------------
+After the backend is live, run once from your local machine:
+
+  cd backend
+  cp .env.example .env        # fill in your production values
+  node scripts/createAdmin.js
+
+Or on Render: open the backend service → Shell tab and run:
+  node scripts/createAdmin.js
+
+---------------------------------------------------------
+VERIFICATION CHECKLIST
+---------------------------------------------------------
+[ ] Frontend loads at Vercel URL
+[ ] Login / Register works (JWT returned)
+[ ] Events can be created by admin
+[ ] Payment proof upload works (Cloudinary URL stored in DB)
+[ ] Ticket confirmation email received
+[ ] Discussion Forum WebSocket connects (no CORS errors in console)
+[ ] Admin dashboard accessible with admin credentials
+
