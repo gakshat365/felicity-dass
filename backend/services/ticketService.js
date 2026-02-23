@@ -13,9 +13,9 @@ const generateTicketId = (registrationId) => {
  * Generate QR code as base64 data URL
  * QR contains the registration ID for scanning
  */
-const generateQRCode = async (registrationId) => {
+const generateQRCode = async (ticketId) => {
     try {
-        const qrData = registrationId.toString();
+        const qrData = ticketId.toString();   // encode the human-readable TKT-... ticketId
         const qrCodeDataURL = await QRCode.toDataURL(qrData, {
             errorCorrectionLevel: 'H',
             type: 'image/png',
@@ -37,8 +37,8 @@ const generateTicket = async (registration, event, participant) => {
         // Generate ticket ID
         const ticketId = generateTicketId(registration._id);
 
-        // Generate QR code
-        const qrCodeBase64 = await generateQRCode(registration._id);
+        // Generate QR code — encodes the ticketId so the scanner can match it
+        const qrCodeBase64 = await generateQRCode(ticketId);
 
         return {
             ticketId,

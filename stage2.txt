@@ -1,0 +1,68 @@
+# Stage 2: Deep Concurrency, State Invalidation, & Edge-Case Testing
+
+This stage focuses on complex multi-actor scenarios, race conditions, and state invalidations. Rather than basic functionality, these tests ensure the system holds up under abnormal workflows and competing interactions.
+
+## 1. Account Lifecycle & Session Invalidation
+These tests verify that session states correctly reflect dynamic structural changes made by an Admin.
+
+*   **Test Case 2.1 (Admin Suspends Active Organizer):** 
+    *   **Setup:** Admin logs in on Browser A. Organizer logs in on Browser B.
+    *   **Action:** Admin clicks "Suspend/Ban" on the Organizer. Organizer attempts to create a new event or view their dashboard.
+    *   **Expected Result:** Organizer's active session is invalidated. API request returns `403 Forbidden` or `401 Unauthorized` and the Organizer is instantly logged out or blocked from proceeding.
+*   **Test Case 2.2 (Admin Activates Suspended Organizer):**
+    *   **Setup:** Organizer account is currently marked `isApproved: false` or suspended.
+    *   **Action:** Organizer attempts to log in (Result: Blocked). Admin clicks "Approve/Activate". Organizer attempts to log in again.
+    *   **Expected Result:** Organizer successfully logs in on the second attempt.
+*   **Test Case 2.3 (Admin Deletes Active Organizer):**
+    *   **Setup:** Organizer is logged in and creating an event.
+    *   **Action:** Admin permanently deletes the Organizer. Organizer clicks "Publish Event".
+    *   **Expected Result:** Request fails. Organizer is logged out. Event is not saved. All existing events tied to the Organizer are cascade-deleted or hidden.
+
+## 2. Concurrent Transactions & Race Conditions
+These tests verify atomicity and locking mechanisms when multiple users vie for limited resources.
+
+*   **Test Case 2.4 (Normal Event Hoarding - Zero Capacity):**
+    *   **Setup:** Event created with a `registrationLimit` of 1.
+    *   **Action:** Participant A and Participant B both click "Register" at the exact same millisecond (use two tabs or Postman).
+    *   **Expected Result:** Only one registration record is created. The other user receives a "Registration limit reached" error. Capacity never goes into negative (`-1`).
+*   **Test Case 2.5 (Merchandise Hoarding):**
+    *   **Setup:** Merchandise event with `stock` = 1.
+    *   **Action:** Participant A registers (Status: `pending`). Participant B also registers (Status: `pending`). Organizer views the Dashboard.
+    *   **Action 2:** Organizer clicks "Approve Payment" for Participant B. Then Organizer clicks "Approve Payment" for Participant A.
+    *   **Expected Result:** Participant B's status changes to `confirmed` and `stock` becomes 0. When Organizer tries to approve A, the system throws an error ("Out of Stock") and Participant A remains `pending` or is automatically set to `rejected`.
+
+## 3. Complex State Transitions (Event Workflows)
+These tests ensure users cannot force impossible logical states during boundary moments.
+
+*   **Test Case 2.6 (Simultaneous Cancel vs Approve):**
+    *   **Setup:** Participant has a pending merchandise order.
+    *   **Action:** Participant clicks "Cancel Registration". At the exact same second, Organizer clicks "Approve Payment".
+    *   **Expected Result:** System enforces a clean state. If Cancel processes first, Organizer receives an error ("Registration not found or already cancelled"). If Approve processes first, Participant receives an error ("Cannot cancel a confirmed physical good").
+*   **Test Case 2.7 (Simultaneous Scan vs Cancel):**
+    *   **Setup:** Participant has a confirmed Normal event ticket.
+    *   **Action:** Participant clicks "Cancel Registration". Organizer scans the QR code at the exact same moment.
+    *   **Expected Result:** If Scan processes first, Participant's cancellation fails ("Attendance already marked"). If Cancel processes first, Scanner gets an error ("Invalid or Cancelled Ticket").
+*   **Test Case 2.8 (Draft Modification While Registering):**
+    *   **Setup:** Organizer makes an event "Published". Participant opens the Registration modal (loads the custom forms).
+    *   **Action:** Organizer quickly edits the event and adds a new required MCQ question. Participant clicks "Submit".
+    *   **Expected Result:** The registration submission should ideally fail validation ("Missing required MCQ field"). Alternatively, the system freezes the form schema once published. 
+
+## 4. Privacy, Security & Data Fuzzing
+*   **Test Case 2.9 (Forged Event IDs):**
+    *   **Setup:** Participant logs in.
+    *   **Action:** Use Postman/Console to send a `POST /api/registrations/:eventId` request using an invalid MongoDB ObjectID or the ID of an event created by a different Organizer that is set to `Draft`.
+    *   **Expected Result:** `404 Not Found` or `400 Invalid ID`. Does not crash the server.
+*   **Test Case 2.10 (Cross-Talk Privacy Leak):**
+    *   **Setup:** Participant logs in. 
+    *   **Action:** Try to GET `/api/registrations` and inject the User ID of a different participant to view their registered events.
+    *   **Expected Result:** The backend `req.user._id` extraction from the JWT overrides the request payload natively; Participant can only ever see their own data.
+*   **Test Case 2.11 (Anonymous Feedback Double-Submission Hack):**
+    *   **Setup:** Participant attends event.
+    *   **Action:** Participant submits anonymous feedback. Intercepts network payload and replays it 10 times.
+    *   **Expected Result:** The first submission succeeds. The subsequent 9 fail instantly because `registration.feedbackSubmitted` was toggled to true.
+
+## 5. Webhooks & Integrations
+*   **Test Case 2.12 (Discord Webhook with Invalid URL):**
+    *   **Setup:** Organizer configures a malformed webhook URL (`htttp://discord...`) or one that doesn't exist.
+    *   **Action:** Organizer publishes a new Event.
+    *   **Expected Result:** The event publishes successfully. The backend fails the webhook trigger gracefully (logs the error) without crashing the main application thread or blocking the DB write.

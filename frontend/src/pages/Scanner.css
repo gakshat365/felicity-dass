@@ -12,37 +12,52 @@
     margin-bottom: 2rem;
 }
 
+/* ── Camera viewport ────────────────────────────────── */
 .scanner-view {
     position: relative;
     border-radius: 12px;
     overflow: hidden;
     background: #000;
-    aspect-ratio: 1/1;
+    aspect-ratio: 1 / 1;
     border: 2px solid #30363d;
 }
 
-.qr-reader {
-    width: 100%;
-}
-
-.scanner-overlay {
+/* Live video — fills the square, crops edges */
+.scanner-video {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Generic overlay (sits above video) ─────────────── */
+.scanner-overlay {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    z-index: 5;
 }
 
+/* Dim background for processing state */
+.scanner-overlay--dim {
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    pointer-events: all;
+}
+
+/* ── Scan-region box + animated line ────────────────── */
 .scan-region {
-    width: 250px;
-    height: 250px;
-    border: 2px solid #58a6ff;
+    width: 220px;
+    height: 220px;
+    border: 2.5px solid #58a6ff;
     border-radius: 12px;
-    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.42);
     position: relative;
 }
 
@@ -52,18 +67,19 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: #58a6ff;
-    animation: scan 2s infinite linear;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #58a6ff, transparent);
+    border-radius: 2px;
+    animation: scanLine 1.8s ease-in-out infinite;
 }
 
-@keyframes scan {
+@keyframes scanLine {
     0% {
         top: 0;
     }
 
     50% {
-        top: 100%;
+        top: calc(100% - 3px);
     }
 
     100% {
@@ -71,28 +87,57 @@
     }
 }
 
-.scanner-message {
-    height: 100%;
+/* ── Status messages ────────────────────────────────── */
+.scanner-status-text {
+    color: #8b949e;
+    font-size: 0.9rem;
+}
+
+.scanner-error {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: #f85149;
+}
+
+.scanner-error span {
+    font-size: 2.5rem;
+}
+
+.scanner-processing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
     color: #f0f6fc;
 }
 
-.success-icon {
-    font-size: 4rem;
-    color: #3fb950;
-    margin-bottom: 1rem;
+.scanner-processing span {
+    font-size: 3rem;
 }
 
 .ticket-id {
     font-family: monospace;
     color: #8b949e;
+    font-size: 0.78rem;
+    word-break: break-all;
+    padding: 0 1rem;
+    margin-top: 0.25rem;
 }
 
-.scanner-instructions {
-    margin-top: 2rem;
+/* ── Controls below scanner ──────────────────────────── */
+.scanner-controls {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hint {
     color: #8b949e;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin: 0;
 }
