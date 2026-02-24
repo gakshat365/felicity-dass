@@ -6,11 +6,9 @@ Event management system built for IIIT Hyderabad — lets clubs create events, p
 **Backend:** https://felicity-dass.onrender.com  
 **Admin login:** `admin@iiit.ac.in` / `admin123`
 
-> Note: Backend is on Render's free tier — first request after inactivity takes ~30 seconds to wake up.
-
 ---
 
-## 🚀 Quick Start (Local)
+## Quick Start (Local)
 
 ### Prerequisites
 - Node.js ≥ 18
@@ -34,7 +32,7 @@ npm run dev                  # Starts on :5173
 
 ---
 
-## 🏗️ Tech Stack & Justification
+## Tech Stack & Justification
 
 ### Backend
 | Library | Version | Justification |
@@ -66,11 +64,11 @@ npm run dev                  # Starts on :5173
 
 ---
 
-## 📦 Advanced Features Implemented
+## Advanced Features Implemented
 
 ### Tier A (Choose 2 — 8 Marks each)
 
-#### ✅ 2. Merchandise Payment Approval Workflow
+#### 2. Merchandise Payment Approval Workflow
 **Justification:** Directly supports real-world Felicity merchandise sales (T-shirts, hoodies, kits). Adds meaningful complexity through a multi-step state machine (pending → proof_uploaded → confirmed/rejected) and integrates tightly with Tier A QR ticket generation.
 
 **Design choices:**
@@ -79,7 +77,7 @@ npm run dev                  # Starts on :5173
 - Atomic `findOneAndUpdate` with `$gt: 0` guard prevents overselling in concurrent approvals
 - QR ticket + confirmation email generated conditionally on approval — never in pending/rejected state
 
-#### ✅ 3. QR Scanner & Attendance Tracking
+#### 3. QR Scanner & Attendance Tracking
 **Justification:** Core real-world feature for events — organizers need to scan 200+ QR codes at Felicity gates. Provides a live attendance dashboard without manual data entry.
 
 **Design choices:**
@@ -93,7 +91,7 @@ npm run dev                  # Starts on :5173
 
 ### Tier B (Choose 2 — 6 Marks each)
 
-#### ✅ 1. Real-Time Discussion Forum
+#### 1. Real-Time Discussion Forum
 **Justification:** Enables participants to ask event-day questions without separate WhatsApp groups. Organizers can pin announcements so they float to the top for all users.
 
 **Design choices:**
@@ -103,7 +101,7 @@ npm run dev                  # Starts on :5173
 - Offline notifications created in DB when a reply targets a user who is not currently connected
 - Soft-delete (`isDeleted: true`) preserves thread structure while hiding content
 
-#### ✅ 2. Organizer Password Reset Workflow
+#### 2. Organizer Password Reset Workflow
 **Justification:** Organizer accounts have no self-service password reset (by design — accounts are admin-provisioned). This provides the required controlled reset path without weakening security.
 
 **Design choices:**
@@ -117,7 +115,7 @@ npm run dev                  # Starts on :5173
 
 ### Tier C (Choose 1 — 2 Marks each)
 
-#### ✅ 1. Anonymous Feedback System
+#### 1. Anonymous Feedback System
 **Justification:** Provides organizers with actionable post-event data without violating participant privacy. Simpler than a full review platform but satisfies the requirement with minimal surface area for abuse.
 
 **Design choices:**
@@ -129,7 +127,7 @@ npm run dev                  # Starts on :5173
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 dass-assignment/
@@ -152,12 +150,10 @@ dass-assignment/
 
 ---
 
-## 🔐 Credentials
+## Credentials
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@iiit.ac.in` | `admin123` |
 | Organizer | Created by admin from dashboard | Generated & emailed automatically |
 | Participant | Register at `/register` | Your chosen password |
-
-> Organizers can't self-register — admin provisions them. This is intentional (Felicity organizers are vetted club members).
