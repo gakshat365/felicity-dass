@@ -5,10 +5,6 @@ import './RegistrationModal.css';
 import TeamRegistrationModal from './TeamRegistrationModal';
 
 const RegistrationModal = ({ event, onClose, onSuccess }) => {
-    // Delegate entirely to TeamRegistrationModal for team-based events
-    if (event.teamBased) {
-        return <TeamRegistrationModal event={event} onClose={onClose} onSuccess={onSuccess} />;
-    }
     const [formData, setFormData] = useState({});
     const [teamName, setTeamName] = useState('');
     const [merchandiseDetails, setMerchandiseDetails] = useState({
@@ -18,6 +14,12 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
         quantity: 1
     });
     const [loading, setLoading] = useState(false);
+
+    // Delegate entirely to TeamRegistrationModal for team-based events
+    // (placed after all hooks to comply with Rules of Hooks)
+    if (event.teamBased) {
+        return <TeamRegistrationModal event={event} onClose={onClose} onSuccess={onSuccess} />;
+    }
 
     const handleFormChange = (fieldName, value) => {
         setFormData(prev => ({
@@ -157,9 +159,9 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                             value={formData[label] || ''}
                                             onChange={(e) => {
                                                 const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                                if (words.length > (field.wordLimit || 50)) {
-                                                    toast.error(`Short answer cannot exceed ${field.wordLimit || 50} words`);
-                                                    return;
+                                                const limit = field.wordLimit || 50;
+                                                if (words.length > limit) {
+                                                    toast.error(`Short answer cannot exceed ${limit} words`);
                                                 }
                                                 handleFormChange(label, e.target.value);
                                             }}
@@ -173,9 +175,9 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                             value={formData[label] || ''}
                                             onChange={(e) => {
                                                 const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                                if (words.length > (field.wordLimit || 200)) {
-                                                    toast.error(`Long answer cannot exceed ${field.wordLimit || 200} words`);
-                                                    return;
+                                                const limit = field.wordLimit || 200;
+                                                if (words.length > limit) {
+                                                    toast.error(`Long answer cannot exceed ${limit} words`);
                                                 }
                                                 handleFormChange(label, e.target.value);
                                             }}
@@ -253,7 +255,7 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                             <input
                                                 type="file"
                                                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                                onChange={(e) => {
+                                                onChange={async (e) => {
                                                     const file = e.target.files[0];
                                                     if (file && file.size > 5 * 1024 * 1024) {
                                                         toast.error('File size should be less than 5MB');
@@ -261,8 +263,21 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                                         return;
                                                     }
                                                     if (file) {
-                                                        handleFormChange(label, `[File Uploaded] ${file.name}`);
-                                                        toast.success('File attached successfully (simulated)');
+                                                        try {
+                                                            const uploadData = new FormData();
+                                                            uploadData.append('formFile', file);
+                                                            uploadData.append('eventId', event._id);
+                                                            uploadData.append('fieldName', label);
+                                                            const res = await axios.post('/registrations/upload-form-file', uploadData, {
+                                                                headers: { 'Content-Type': 'multipart/form-data' }
+                                                            });
+                                                            handleFormChange(label, res.data.url);
+                                                            toast.success(`File "${file.name}" uploaded successfully`);
+                                                        } catch (err) {
+                                                            console.error('File upload error:', err);
+                                                            toast.error('Failed to upload file');
+                                                            e.target.value = '';
+                                                        }
                                                     } else {
                                                         const currentData = { ...formData };
                                                         delete currentData[label];
@@ -273,6 +288,9 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                                 style={{ padding: '0.5rem 0' }}
                                             />
                                             <small className="help-text">Max size: 5MB. Accepted formats: PDF, DOC, JPG, PNG.</small>
+                                            {formData[label] && formData[label].startsWith('http') && (
+                                                <small className="upload-success">✓ File uploaded</small>
+                                            )}
                                         </div>
                                     )}
                                 </div>

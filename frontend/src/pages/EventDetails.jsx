@@ -189,22 +189,32 @@ const EventDetails = () => {
                         </div>
                     )}
 
-                    {event.type === 'merchandise' && event.itemDetails && (
+                    {event.type === 'merchandise' && (event.merchandiseDetails || event.itemDetails) && (
                         <div className="merchandise-section">
                             <h3>Item Details</h3>
-                            {event.itemDetails.sizes && event.itemDetails.sizes.length > 0 && (
+                            {((event.merchandiseDetails?.sizes || event.itemDetails?.sizes) || []).length > 0 && (
                                 <div className="merch-detail">
-                                    <strong>Sizes:</strong> {event.itemDetails.sizes.join(', ')}
+                                    <strong>Sizes:</strong> {(event.merchandiseDetails?.sizes || event.itemDetails?.sizes).join(', ')}
                                 </div>
                             )}
-                            {event.itemDetails.colors && event.itemDetails.colors.length > 0 && (
+                            {((event.merchandiseDetails?.colors || event.itemDetails?.colors) || []).length > 0 && (
                                 <div className="merch-detail">
-                                    <strong>Colors:</strong> {event.itemDetails.colors.join(', ')}
+                                    <strong>Colors:</strong> {(event.merchandiseDetails?.colors || event.itemDetails?.colors).join(', ')}
                                 </div>
                             )}
-                            {event.stock && (
+                            {((event.merchandiseDetails?.variants || event.itemDetails?.variants) || []).length > 0 && (
+                                <div className="merch-detail">
+                                    <strong>Variants:</strong> {(event.merchandiseDetails?.variants || event.itemDetails?.variants).join(', ')}
+                                </div>
+                            )}
+                            {event.stock != null && (
                                 <div className="merch-detail">
                                     <strong>Stock:</strong> {event.stock} units
+                                </div>
+                            )}
+                            {event.purchaseLimitPerUser != null && (
+                                <div className="merch-detail">
+                                    <strong>Purchase Limit:</strong> {event.purchaseLimitPerUser} per person
                                 </div>
                             )}
                         </div>

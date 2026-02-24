@@ -96,7 +96,7 @@ const TeamRegistrationModal = ({ event, onClose, onSuccess }) => {
                                     value={formData[key] || ''}
                                     onChange={(e) => {
                                         const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                        if (words.length > 50) { toast.error('Answer cannot exceed 50 words'); return; }
+                                        if (words.length > 50) { toast.error('Answer cannot exceed 50 words'); }
                                         handleFormChange(key, e.target.value);
                                     }}
                                     required={field.required}
@@ -109,7 +109,7 @@ const TeamRegistrationModal = ({ event, onClose, onSuccess }) => {
                                     value={formData[key] || ''}
                                     onChange={(e) => {
                                         const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                        if (words.length > 200) { toast.error('Answer cannot exceed 200 words'); return; }
+                                        if (words.length > 200) { toast.error('Answer cannot exceed 200 words'); }
                                         handleFormChange(key, e.target.value);
                                     }}
                                     required={field.required}

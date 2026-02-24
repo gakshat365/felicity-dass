@@ -25,14 +25,17 @@ const EditEvent = () => {
         registrationFee: 0,
         registrationLimit: '',
         stock: '',
+        purchaseLimitPerUser: '',
         merchandiseDetails: { sizes: [], colors: [], variants: [] },
         customFormTitle: '',
         customFormDescription: '',
         customForm: [],
         tags: [],
-        upiId: ''
+        upiId: '',
+        teamBased: false,
+        minTeamSize: 2,
+        maxTeamSize: 5
     });
-    const [tagInput, setTagInput] = useState('');
 
     const TAG_OPTIONS = ['dance', 'music', 'coding', 'hacking', 'opensource', 'quantum', 'art', 'other'];
 
@@ -90,12 +93,16 @@ const EditEvent = () => {
                 registrationFee: data.registrationFee || 0,
                 registrationLimit: data.registrationLimit || '',
                 stock: data.stock || '',
+                purchaseLimitPerUser: data.purchaseLimitPerUser || '',
                 merchandiseDetails: data.merchandiseDetails || { sizes: [], colors: [], variants: [] },
                 customFormTitle: data.customFormTitle || '',
                 customFormDescription: data.customFormDescription || '',
                 customForm: data.customForm || [],
                 tags: data.tags || [],
-                upiId: data.upiId || ''
+                upiId: data.upiId || '',
+                teamBased: data.teamBased || false,
+                minTeamSize: data.minTeamSize || 2,
+                maxTeamSize: data.maxTeamSize || 5
             });
         } catch (error) {
             toast.error('Failed to load event');
@@ -146,7 +153,11 @@ const EditEvent = () => {
                 status: newStatus || eventStatus,
                 registrationFee: parseFloat(formData.registrationFee) || 0,
                 registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
-                stock: formData.stock ? parseInt(formData.stock) : null
+                stock: formData.stock ? parseInt(formData.stock) : null,
+                purchaseLimitPerUser: formData.purchaseLimitPerUser ? parseInt(formData.purchaseLimitPerUser) : null,
+                teamBased: formData.teamBased,
+                minTeamSize: formData.teamBased ? parseInt(formData.minTeamSize) || 2 : undefined,
+                maxTeamSize: formData.teamBased ? parseInt(formData.maxTeamSize) || 5 : undefined
             };
 
             await axios.patch(`/events/${id}`, eventData);

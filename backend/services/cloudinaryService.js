@@ -59,6 +59,37 @@ const uploadPaymentProof = async (filePath, registrationId) => {
 };
 
 /**
+ * Upload a custom form file to Cloudinary
+ */
+const uploadFormFile = async (filePath, eventId, fieldName) => {
+    try {
+        if (!configureCloudinary()) {
+            // Return mock URL for development using the local file
+            return {
+                success: true,
+                url: `http://localhost:5000/uploads/${require('path').basename(filePath)}`,
+                message: 'Cloudinary not configured (development mode)'
+            };
+        }
+
+        const result = await cloudinary.uploader.upload(filePath, {
+            folder: 'event-management/form-uploads',
+            public_id: `form-${eventId}-${Date.now()}`,
+            resource_type: 'auto'
+        });
+
+        return {
+            success: true,
+            url: result.secure_url,
+            publicId: result.public_id
+        };
+    } catch (error) {
+        console.error('Cloudinary form file upload error:', error);
+        throw new Error('Failed to upload file');
+    }
+};
+
+/**
  * Delete file from Cloudinary
  */
 const deleteFile = async (publicId) => {
@@ -78,5 +109,6 @@ const deleteFile = async (publicId) => {
 module.exports = {
     uploadPaymentProof,
     deleteFile,
-    configureCloudinary
+    configureCloudinary,
+    uploadFormFile
 };

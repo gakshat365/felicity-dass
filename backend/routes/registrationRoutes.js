@@ -5,6 +5,7 @@ const {
     getMyRegistrations,
     getRegistration,
     uploadPaymentProofHandler,
+    uploadFormFileHandler,
     upload,
     approvePayment,
     rejectPayment,
@@ -19,6 +20,13 @@ router.use(protect);
 
 // Create registration (Participants only)
 router.post('/', authorize('participant'), createRegistration);
+
+// Upload file for custom form field (Participants only)
+router.post('/upload-form-file',
+    authorize('participant'),
+    upload.single('formFile'),
+    uploadFormFileHandler
+);
 
 // Get my registrations (Participants only)
 router.get('/my-registrations', authorize('participant'), getMyRegistrations);

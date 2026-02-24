@@ -21,14 +21,14 @@ const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|pdf/;
+        const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|msword|officedocument/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
 
-        if (extname && mimetype) {
+        if (extname || mimetype) {
             cb(null, true);
         } else {
-            cb(new Error('Only images (JPEG, PNG) and PDF files are allowed'));
+            cb(new Error('Only images (JPEG, PNG), PDF, and DOC/DOCX files are allowed'));
         }
     }
 });
@@ -703,12 +703,33 @@ const markAttendanceByTicket = async (req, res) => {
     }
 };
 
+/**
+ * Upload a file for a custom form field
+ * POST /api/registrations/upload-form-file
+ */
+const uploadFormFileHandler = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        const { uploadFormFile } = require('../services/cloudinaryService');
+        const eventId = req.body.eventId || 'unknown';
+        const fieldName = req.body.fieldName || 'file';
+        const result = await uploadFormFile(req.file.path, eventId, fieldName);
+        res.json({ url: result.url, filename: req.file.originalname });
+    } catch (error) {
+        console.error('Form file upload error:', error);
+        res.status(500).json({ message: 'Failed to upload file' });
+    }
+};
+
 module.exports = {
     createRegistration,
     getMyRegistrations,
     getRegistration,
     getEventRegistrations,
     uploadPaymentProofHandler,
+    uploadFormFileHandler,
     upload, // Export multer middleware
     approvePayment,
     rejectPayment,

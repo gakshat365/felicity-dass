@@ -31,7 +31,7 @@ const sendTicketEmail = async (participant, event, ticket) => {
         const transporter = createTransporter();
 
         // Extract base64 data from QR code data URL
-        const qrBase64 = ticket.qrCodeBase64.split('base64,')[1];
+        const qrBase64 = ticket.qrCodeBase64 ? ticket.qrCodeBase64.split('base64,')[1] : null;
 
         const mailOptions = {
             from: {
@@ -98,14 +98,14 @@ const sendTicketEmail = async (participant, event, ticket) => {
                 </body>
                 </html>
             `,
-            attachments: [
+            attachments: qrBase64 ? [
                 {
                     filename: 'ticket-qr.png',
                     content: qrBase64,
                     encoding: 'base64',
                     cid: 'qrcode' // Referenced in HTML as cid:qrcode
                 }
-            ]
+            ] : []
         };
 
         const info = await transporter.sendMail(mailOptions);
