@@ -83,7 +83,7 @@ const PaymentUpload = () => {
                         <p className="upi-note">Scan or pay to the above ID and upload the screenshot below.</p>
                         {/* QR Code Placeholder */}
                         <div className="upi-qr-placeholder">
-                            {/* In a real app, generate a dynamic QR here */}
+                            {/* TODO: generate a dynamic QR here */}
                             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${import.meta.env.VITE_UPI_ID || 'organizer@upi'}&pn=DASS%20Events&am=${event.registrationFee}&cu=INR`} alt="UPI QR" />
                         </div>
                     </div>

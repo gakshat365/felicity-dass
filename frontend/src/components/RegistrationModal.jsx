@@ -257,7 +257,7 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                                         e.target.value = '';
                                                         return;
                                                     }
-                                                    // In a real app, you'd upload this to S3/Cloudinary and store the URL
+                                                    // TODO: upload this to S3/Cloudinary and store the URL
                                                     // For this assignment, we'll store the filename to represent a successful upload
                                                     if (file) {
                                                         handleFormChange(field.label, `[File Uploaded] ${file.name}`);

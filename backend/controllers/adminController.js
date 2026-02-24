@@ -181,7 +181,7 @@ const createOrganizer = async (req, res) => {
             status: 'active'
         });
 
-        // In a real app, send this password via email
+        // TODO: send this password via email
         res.status(201).json({
             message: 'Organizer created successfully',
             email,

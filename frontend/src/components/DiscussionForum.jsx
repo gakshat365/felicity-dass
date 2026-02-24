@@ -34,7 +34,7 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
                         toast('📢 New Announcement!', { icon: '✨', duration: 4000 });
                     } else if (data.message.parentId) {
                         // Check if it's a reply to current user (simplified)
-                        // In a real app we'd check original message author
+                        // TODO: check original message author
                         toast.success('Someone replied in the forum');
                     }
                 }

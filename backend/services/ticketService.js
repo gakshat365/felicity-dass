@@ -43,7 +43,7 @@ const generateTicket = async (registration, event, participant) => {
         return {
             ticketId,
             qrCodeBase64,
-            // PDF generation will be added later if needed
+            // TODO: PDF ticket generation
             pdfUrl: null
         };
     } catch (error) {

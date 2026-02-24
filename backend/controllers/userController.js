@@ -304,7 +304,7 @@ const testWebhook = async (req, res) => {
         const { url } = req.body;
         const { sendEventNotification } = require('../services/discordService');
 
-        // Send a dummy test message
+        // Send a test message payload
         const mockEvent = {
             name: "Test Connection",
             organizer: { organizerName: req.user.organizerName || "Organization" },

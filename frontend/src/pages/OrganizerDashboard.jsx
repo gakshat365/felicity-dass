@@ -157,7 +157,7 @@ const OrganizerDashboard = () => {
             <div className="analytics-preview">
                 <h2>📈 Platform Growth</h2>
                 <div className="chart-placeholder">
-                    {/* In a real app, use Chart.js here */}
+                    {/* TODO: use Chart.js here */}
                     <div className="bar-container">
                         {[40, 70, 45, 90, 65, 80, 95].map((h, i) => (
                             <div key={i} className="bar" style={{ height: `${h}%` }}></div>
