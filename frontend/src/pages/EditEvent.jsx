@@ -17,6 +17,7 @@ const EditEvent = () => {
         name: '',
         description: '',
         type: 'normal',
+        category: 'Other',
         startDate: '',
         endDate: '',
         registrationDeadline: '',
@@ -81,6 +82,7 @@ const EditEvent = () => {
                 name: data.name || '',
                 description: data.description || '',
                 type: data.type || 'normal',
+                category: data.category || 'Other',
                 startDate: formatDate(data.startDate),
                 endDate: formatDate(data.endDate),
                 registrationDeadline: formatDate(data.registrationDeadline),
@@ -211,6 +213,17 @@ const EditEvent = () => {
                                 disabled={isReadOnly || isPublished || isOngoing}>
                                 <option value="normal">Normal Event</option>
                                 <option value="merchandise">Merchandise</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Category</label>
+                            <select name="category" value={formData.category} onChange={handleChange}
+                                disabled={isReadOnly}>
+                                <option value="Technical">Technical</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Academic">Academic</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                     </div>

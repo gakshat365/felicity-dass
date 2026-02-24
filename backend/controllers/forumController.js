@@ -91,17 +91,38 @@ const postMessage = async (req, res) => {
         });
 
         // Offline Notification Logic
+        const Notification = require('../models/Notification');
+        const senderName = user.firstName || user.organizerName || 'Someone';
+        const mentionsAll = /@(all|everyone)/i.test(content);
+
         if (parentId) {
+            // Notify the author of the parent message when someone replies
             const parentMessage = await Message.findById(parentId).populate('user');
             if (parentMessage && parentMessage.user._id.toString() !== user._id.toString()) {
-                const Notification = require('../models/Notification');
                 await Notification.create({
                     user: parentMessage.user._id,
                     type: 'forum_reply',
                     title: 'New Reply in Forum',
-                    message: `${user.firstName || user.organizerName} replied to your message.`,
+                    message: `${senderName} replied to your message.`,
                     link: `/events/${eventId}`
                 });
+            }
+        }
+
+        // Notify all participants if organizer/admin posts OR message contains @all / @everyone
+        if ((isOrganizer || isAdmin || mentionsAll) && !parentId) {
+            const registrations = await Registration.find({ event: eventId, status: 'confirmed' }).select('participant');
+            const notifyPayloads = registrations
+                .filter(r => r.participant.toString() !== user._id.toString())
+                .map(r => ({
+                    user: r.participant,
+                    type: 'forum_announcement',
+                    title: 'New Organizer Message',
+                    message: `${senderName} posted a message in the forum: "${content.substring(0, 80)}${content.length > 80 ? '…' : ''}"`,
+                    link: `/events/${eventId}`
+                }));
+            if (notifyPayloads.length > 0) {
+                await Notification.insertMany(notifyPayloads);
             }
         }
 
@@ -157,6 +178,8 @@ const togglePin = async (req, res) => {
         const { messageId } = req.params;
         const message = await Message.findById(messageId).populate('event');
 
+        if (!message) return res.status(404).json({ message: 'Message not found' });
+
         const isOrganizer = message.event.organizer.toString() === req.user._id.toString();
         const isAdmin = req.user.role === 'admin';
 
@@ -181,6 +204,8 @@ const deleteMessage = async (req, res) => {
     try {
         const { messageId } = req.params;
         const message = await Message.findById(messageId).populate('event');
+
+        if (!message) return res.status(404).json({ message: 'Message not found' });
 
         const isOwner = message.user.toString() === req.user._id.toString();
         const isOrganizer = message.event.organizer.toString() === req.user._id.toString();

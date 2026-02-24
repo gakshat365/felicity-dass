@@ -23,6 +23,13 @@ const eventSchema = mongoose.Schema({
     registrationLimit: { type: Number, min: 0 }, // Max participants
     registrationFee: { type: Number, default: 0, min: 0 },
 
+    // Category (high-level domain)
+    category: {
+        type: String,
+        enum: ['Technical', 'Cultural', 'Sports', 'Academic', 'Other'],
+        default: 'Other'
+    },
+
     // Tags (from interest areas + "other")
     tags: [{
         type: String,

@@ -232,8 +232,8 @@ const toggleFollow = async (req, res) => {
             return res.status(404).json({ message: 'Organizer not found' });
         }
 
-        // Toggle follow
-        const isFollowing = user.following.includes(organizerId);
+        // Toggle follow — use .toString() comparison to handle ObjectId vs String
+        const isFollowing = user.following.some(id => id.toString() === organizerId);
 
         if (isFollowing) {
             // Unfollow

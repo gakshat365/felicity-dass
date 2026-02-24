@@ -426,6 +426,11 @@ const approvePayment = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
 
+        // Idempotency guard — prevent double-approval race condition
+        if (registration.paymentStatus === 'approved') {
+            return res.status(400).json({ message: 'Payment has already been approved' });
+        }
+
         // Handle Merchandise Stock Expiration Atomic Decrement
         if (registration.registrationType === 'merchandise') {
             const requestedQuantity = parseInt(registration.merchandiseDetails?.quantity) || 1;
@@ -494,11 +499,23 @@ const rejectPayment = async (req, res) => {
             return res.status(403).json({ message: 'Access denied' });
         }
 
+        // Guard against re-rejecting
+        if (registration.paymentStatus === 'rejected') {
+            return res.status(400).json({ message: 'Payment has already been rejected' });
+        }
+
         // Update payment status
         registration.paymentStatus = 'rejected';
         registration.status = 'rejected';
         registration.paymentRejectionReason = reason || 'Payment proof invalid';
         await registration.save();
+
+        // Restore the reserved capacity slot for normal events
+        if (registration.registrationType === 'normal') {
+            await Event.findByIdAndUpdate(registration.event._id, {
+                $inc: { registrationCount: -1 }
+            });
+        }
 
         // Send rejection email
         await sendPaymentRejectionEmail(registration.participant, registration.event, reason);

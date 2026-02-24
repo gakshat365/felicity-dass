@@ -13,6 +13,7 @@ const createEvent = async (req, res) => {
             name,
             description,
             type,
+            category,
             startDate,
             endDate,
             registrationDeadline,
@@ -58,6 +59,7 @@ const createEvent = async (req, res) => {
             name,
             description,
             type,
+            category: category || 'Other',
             organizer: req.user._id,
             startDate,
             endDate,
@@ -102,7 +104,7 @@ const createEvent = async (req, res) => {
  */
 const getEvents = async (req, res) => {
     try {
-        const { type, tags, status, organizer, search, eligibility, startDate, endDate, followedOnly } = req.query;
+        const { type, tags, category, status, organizer, search, eligibility, startDate, endDate, followedOnly } = req.query;
 
         let query = {};
 
@@ -127,6 +129,11 @@ const getEvents = async (req, res) => {
         // Filter by type
         if (type && ['normal', 'merchandise'].includes(type)) {
             query.type = type;
+        }
+
+        // Filter by category
+        if (category && ['Technical', 'Cultural', 'Sports', 'Academic', 'Other'].includes(category)) {
+            query.category = category;
         }
 
         // Filter by tags
@@ -378,7 +385,7 @@ const updateEvent = async (req, res) => {
         // Determine what can be edited based on status
         const allowedUpdates = {
             draft: 'all', // Can edit everything
-            published: ['description', 'registrationDeadline', 'registrationLimit', 'tags', 'status'], // Limited edits
+            published: ['description', 'registrationDeadline', 'registrationLimit', 'tags', 'category', 'status'], // Limited edits
             ongoing: ['status'], // Only status change
             completed: ['status'], // Only status change
             cancelled: [] // No edits

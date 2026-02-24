@@ -16,6 +16,7 @@ const BrowseEvents = () => {
     const [filters, setFilters] = useState({
         search: '',
         type: 'all',
+        category: 'all',
         eligibility: 'all',
         startDate: '',
         endDate: '',
@@ -34,6 +35,7 @@ const BrowseEvents = () => {
 
             const params = {};
             if (filters.type !== 'all') params.type = filters.type;
+            if (filters.category !== 'all') params.category = filters.category;
             if (filters.tags !== 'all') params.tags = filters.tags;
             if (filters.eligibility !== 'all') params.eligibility = filters.eligibility;
             if (filters.search) params.search = filters.search;
@@ -142,6 +144,18 @@ const BrowseEvents = () => {
                     </div>
 
                     <div className="filter-group">
+                        <label>Domain</label>
+                        <select name="category" value={filters.category} onChange={handleFilterChange}>
+                            <option value="all">All Domains</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
                         <label>Eligibility</label>
                         <select name="eligibility" value={filters.eligibility} onChange={handleFilterChange}>
                             <option value="all">All Participants</option>
@@ -194,7 +208,7 @@ const BrowseEvents = () => {
                             <h3>No events found matching your criteria.</h3>
                             <button onClick={() => {
                                 setFilters({
-                                    search: '', type: 'all', eligibility: 'all', startDate: '', endDate: '', tags: 'all'
+                                    search: '', type: 'all', category: 'all', eligibility: 'all', startDate: '', endDate: '', tags: 'all'
                                 });
                                 setFollowedOnly(false);
                             }}>Clear Filters</button>

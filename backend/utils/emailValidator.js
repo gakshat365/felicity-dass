@@ -10,28 +10,32 @@ const IIIT_DOMAINS = {
     ORGANIZER: ['@council.iiit.ac.in', '@clubs.iiit.ac.in', '@felicity.iiit.ac.in']
 };
 
+// Regex: local part must be word.word (e.g. firstname.lastname)
+const IIIT_EMAIL_PATTERNS = {
+    STUDENT: /^[a-zA-Z0-9]+\.[a-zA-Z0-9]+@(students|research|alumni)\.iiit\.ac\.in$/,
+    PROF:    /^[a-zA-Z0-9]+\.[a-zA-Z0-9]+@iiit\.ac\.in$/,
+    ORGANIZER: /^[a-zA-Z0-9]+\.[a-zA-Z0-9]+@(council|clubs|felicity)\.iiit\.ac\.in$/
+};
+
 /**
  * Check if email belongs to IIIT student domains
  */
 const isIIITStudent = (email) => {
-    const lowerEmail = email.toLowerCase();
-    return IIIT_DOMAINS.STUDENT.some(domain => lowerEmail.endsWith(domain));
+    return IIIT_EMAIL_PATTERNS.STUDENT.test(email.toLowerCase());
 };
 
 /**
  * Check if email belongs to IIIT professor domain
  */
 const isIIITProf = (email) => {
-    const lowerEmail = email.toLowerCase();
-    return IIIT_DOMAINS.PROF.some(domain => lowerEmail.endsWith(domain));
+    return IIIT_EMAIL_PATTERNS.PROF.test(email.toLowerCase());
 };
 
 /**
  * Check if email belongs to IIIT organizer domains
  */
 const isIIITOrganizer = (email) => {
-    const lowerEmail = email.toLowerCase();
-    return IIIT_DOMAINS.ORGANIZER.some(domain => lowerEmail.endsWith(domain));
+    return IIIT_EMAIL_PATTERNS.ORGANIZER.test(email.toLowerCase());
 };
 
 /**

@@ -47,6 +47,7 @@ const CreateEvent = () => {
 
         // Step 5: Additional
         tags: [],
+        category: 'Other',
         upiId: ''
     });
 
@@ -272,6 +273,18 @@ const CreateEvent = () => {
                                     <option value="normal">Normal Event</option>
                                     <option value="merchandise">Merchandise</option>
                                 </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Category *</label>
+                                <select name="category" value={formData.category} onChange={handleChange}>
+                                    <option value="Technical">Technical</option>
+                                    <option value="Cultural">Cultural</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Academic">Academic</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <small>Helps participants discover events by domain</small>
                             </div>
                         </div>
                     )}
@@ -532,6 +545,10 @@ const CreateEvent = () => {
                                     <div className="review-item">
                                         <span className="review-label">Type:</span>
                                         <span className="review-value">{formData.type}</span>
+                                    </div>
+                                    <div className="review-item">
+                                        <span className="review-label">Category:</span>
+                                        <span className="review-value">{formData.category}</span>
                                     </div>
                                     <div className="review-item">
                                         <span className="review-label">Start Date:</span>
