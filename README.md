@@ -1,6 +1,12 @@
-# DASS Events Platform
+# Felicity Events Platform
 
-A full-stack event management system built for IIIT Hyderabad's clubs, councils, and fest teams.
+Event management system built for IIIT Hyderabad — lets clubs create events, participants register and receive QR tickets, organizers scan attendance, and everyone argue in the discussion forum.
+
+**Live:** https://felicity-dass-eight.vercel.app  
+**Backend:** https://felicity-dass.onrender.com  
+**Admin login:** `admin@iiit.ac.in` / `admin123`
+
+> Note: Backend is on Render's free tier — first request after inactivity takes ~30 seconds to wake up.
 
 ---
 
@@ -146,12 +152,12 @@ dass-assignment/
 
 ---
 
-## 🔐 Default Credentials (Local Development)
+## 🔐 Credentials
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | `admin@iiit.ac.in` | Set in `ADMIN_PASSWORD` env var (default: `ChangeMe@123`) |
-| Organizer | Created by admin | Generated and shown in Admin Dashboard |
+| Admin | `admin@iiit.ac.in` | `admin123` |
+| Organizer | Created by admin from dashboard | Generated & emailed automatically |
 | Participant | Register at `/register` | Your chosen password |
 
-> ⚠️ Change the admin password after first login in production.
+> Organizers can't self-register — admin provisions them. This is intentional (Felicity organizers are vetted club members).
