@@ -130,7 +130,7 @@ npm run dev                  # Starts on :5173
 ## Project Structure
 
 ```
-dass-assignment/
+2024111005/
 ├── backend/
 │   ├── controllers/    # Route handlers (auth, events, registrations, forum, feedback, admin)
 │   ├── models/         # Mongoose schemas (User, Event, Registration, Message, Feedback, Notification, PasswordResetRequest)
