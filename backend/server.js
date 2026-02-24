@@ -7,10 +7,6 @@ const path = require('path');
 const { Server } = require("socket.io");
 require('dotenv').config();
 
-// Diagnostic: confirm env vars are loaded
-console.log('MONGO_URI set:', !!process.env.MONGO_URI);
-console.log('MONGO_URI starts with:', process.env.MONGO_URI?.substring(0, 20));
-console.log('All env keys from Render:', Object.keys(process.env).filter(k => !k.startsWith('npm_')).join(', '));
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
