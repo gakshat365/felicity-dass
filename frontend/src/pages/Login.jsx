@@ -85,13 +85,6 @@ const Login = () => {
                         </div>
                     </form>
                 </div>
-
-                <div className="auth-info">
-                    <p className="info-text">
-                        <strong>Demo Credentials:</strong>
-                    </p>
-                    <p className="info-text">Admin: admin@iiit.ac.in / Admin@123456</p>
-                </div>
             </div>
         </div>
     );
