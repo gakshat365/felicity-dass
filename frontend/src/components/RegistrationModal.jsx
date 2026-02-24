@@ -2,8 +2,13 @@ import { useState } from 'react';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
 import './RegistrationModal.css';
+import TeamRegistrationModal from './TeamRegistrationModal';
 
 const RegistrationModal = ({ event, onClose, onSuccess }) => {
+    // Delegate entirely to TeamRegistrationModal for team-based events
+    if (event.teamBased) {
+        return <TeamRegistrationModal event={event} onClose={onClose} onSuccess={onSuccess} />;
+    }
     const [formData, setFormData] = useState({});
     const [teamName, setTeamName] = useState('');
     const [merchandiseDetails, setMerchandiseDetails] = useState({
@@ -116,6 +121,19 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                     </select>
                                 </div>
                             )}
+
+                            <div className="form-group">
+                                <label>Quantity *</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={event.purchaseLimitPerUser || 1}
+                                    value={merchandiseDetails.quantity}
+                                    onChange={(e) => setMerchandiseDetails(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                                    required
+                                />
+                                {event.purchaseLimitPerUser && <small className="help-text">Max {event.purchaseLimitPerUser} items per person.</small>}
+                            </div>
                         </div>
                     )}
 
@@ -281,7 +299,7 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                     {event.registrationFee > 0 && (
                         <div className="payment-info">
                             <h3>💰 Payment Required</h3>
-                            <p className="fee-amount">₹{event.registrationFee}</p>
+                            <p className="fee-amount">₹{event.registrationFee * (event.type === 'merchandise' ? merchandiseDetails.quantity : 1)}</p>
                             <p className="payment-note">
                                 After registration, you'll need to upload payment proof in your dashboard.
                             </p>

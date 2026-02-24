@@ -29,7 +29,10 @@ const createEvent = async (req, res) => {
             stock,
             purchaseLimitPerUser,
             upiId,
-            status
+            status,
+            teamBased,
+            minTeamSize,
+            maxTeamSize
         } = req.body;
 
         // Validate user is organizer
@@ -72,7 +75,10 @@ const createEvent = async (req, res) => {
             stock: type === 'merchandise' ? stock : undefined,
             purchaseLimitPerUser: type === 'merchandise' ? purchaseLimitPerUser : undefined,
             upiId: upiId || process.env.UPI_ID,
-            status: status || 'draft'
+            status: status || 'draft',
+            teamBased: type === 'normal' ? (teamBased || false) : false,
+            minTeamSize: type === 'normal' && teamBased ? (parseInt(minTeamSize) || 2) : 2,
+            maxTeamSize: type === 'normal' && teamBased ? (parseInt(maxTeamSize) || 5) : 5
         });
 
         const populatedEvent = await Event.findById(event._id)

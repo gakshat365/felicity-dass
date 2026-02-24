@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const teamSchema = mongoose.Schema({
     event: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
@@ -10,13 +11,21 @@ const teamSchema = mongoose.Schema({
     maxMembers: { type: Number, default: 5 },
     minMembers: { type: Number, default: 2 },
 
-    // Invitation Code
+    // Invitation Code — auto-generated on create
     inviteCode: { type: String, unique: true },
 
     // Status
-    isComplete: { type: Boolean, default: false } // Only generated tickets when true
+    isComplete: { type: Boolean, default: false } // true when members.length >= minMembers
 
 }, { timestamps: true });
+
+// Auto-generate invite code before first save
+teamSchema.pre('save', function (next) {
+    if (!this.inviteCode) {
+        this.inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase(); // e.g. "A3F9BC12"
+    }
+    next();
+});
 
 const Team = mongoose.model('Team', teamSchema);
 module.exports = Team;

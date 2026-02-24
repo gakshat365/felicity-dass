@@ -15,6 +15,8 @@ const MyRegistrations = () => {
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [feedbackEvent, setFeedbackEvent] = useState(null);
+    const [teamDetails, setTeamDetails] = useState(null); // { ...team data }
+    const [teamLoading, setTeamLoading] = useState(false);
 
     useEffect(() => {
         fetchRegistrations();
@@ -30,6 +32,18 @@ const MyRegistrations = () => {
             toast.error('Failed to load registrations');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleViewTeam = async (eventId) => {
+        setTeamLoading(true);
+        try {
+            const { data } = await axios.get(`/teams/event/${eventId}/my-team`);
+            setTeamDetails(data);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Could not load team details');
+        } finally {
+            setTeamLoading(false);
         }
     };
 
@@ -165,6 +179,12 @@ const MyRegistrations = () => {
                                             </div>
                                         )}
 
+                                        {registration.status === 'pending' && registration.team && (
+                                            <div className="info-row">
+                                                <span className="info-label" style={{ color: '#e3b341' }}>⏳ Waiting for teammates to join before tickets are issued</span>
+                                            </div>
+                                        )}
+
                                         {getPaymentStatusBadge(registration)}
 
                                         <div className="ticket-id-section">
@@ -191,6 +211,16 @@ const MyRegistrations = () => {
                                         >
                                             View Event
                                         </button>
+
+                                        {registration.team && (
+                                            <button
+                                                onClick={() => handleViewTeam(registration.event?._id)}
+                                                className="btn btn-secondary btn-sm"
+                                                disabled={teamLoading}
+                                            >
+                                                👥 Team Details
+                                            </button>
+                                        )}
 
                                         {registration.paymentRequired &&
                                             registration.paymentStatus === 'pending' && (
@@ -311,6 +341,53 @@ const MyRegistrations = () => {
                         fetchRegistrations();
                     }}
                 />
+            )}
+
+            {/* Team Details Modal */}
+            {teamDetails && (
+                <div className="modal-overlay" onClick={() => setTeamDetails(null)}>
+                    <div className="ticket-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="ticket-header">
+                            <h2>👥 Team Details</h2>
+                            <button className="close-btn" onClick={() => setTeamDetails(null)}>&times;</button>
+                        </div>
+                        <div className="ticket-body" style={{ padding: '1.5rem' }}>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#e6edf3', marginBottom: '0.5rem' }}>
+                                {teamDetails.name}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', fontSize: '0.85rem', color: '#8b949e' }}>
+                                <span>👥 {teamDetails.memberCount} / {teamDetails.maxMembers} members</span>
+                                <span>{teamDetails.isComplete ? '✅ Complete' : `⏳ Needs ${teamDetails.minMembers - teamDetails.memberCount} more`}</span>
+                                {teamDetails.isLeader && <span style={{ color: '#f0c040' }}>👑 You are the leader</span>}
+                            </div>
+
+                            {teamDetails.isLeader && teamDetails.inviteCode && (
+                                <div style={{ background: '#161b22', border: '2px solid #58a6ff', borderRadius: '8px', padding: '1rem', marginBottom: '1rem', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>Invite Code</div>
+                                    <div style={{ fontFamily: 'monospace', fontSize: '1.5rem', fontWeight: 900, color: '#58a6ff', letterSpacing: '4px', marginBottom: '0.5rem' }}>
+                                        {teamDetails.inviteCode}
+                                    </div>
+                                    <button
+                                        style={{ background: '#21262d', border: '1px solid #30363d', color: '#c9d1d9', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', fontSize: '0.82rem' }}
+                                        onClick={() => { navigator.clipboard.writeText(teamDetails.inviteCode); toast.success('Invite code copied!'); }}
+                                    >
+                                        Copy Code
+                                    </button>
+                                </div>
+                            )}
+
+                            <div style={{ marginTop: '0.5rem' }}>
+                                <div style={{ fontSize: '0.82rem', color: '#8b949e', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Members</div>
+                                {teamDetails.members.map((m, i) => (
+                                    <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #21262d', fontSize: '0.9rem', color: '#c9d1d9' }}>
+                                        {m.name} <span style={{ color: '#6e7681', fontSize: '0.8rem' }}>({m.email})</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

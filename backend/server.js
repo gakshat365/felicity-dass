@@ -67,6 +67,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/registrations', require('./routes/registrationRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/teams', require('./routes/teamRoutes'));
 app.use('/api/forum', require('./routes/forumRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));

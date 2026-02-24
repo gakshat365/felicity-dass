@@ -59,20 +59,29 @@ const createRegistration = async (req, res) => {
             return res.status(400).json({ message: 'Event is not open for registration' });
         }
 
+        // Block direct registration for team-based events — must use /api/teams
+        if (event.teamBased) {
+            return res.status(400).json({
+                message: 'This is a team-based event. Please create or join a team to register.'
+            });
+        }
+
         // Check registration deadline
         if (new Date() > new Date(event.registrationDeadline)) {
             return res.status(400).json({ message: 'Registration deadline has passed' });
         }
 
-        // Check if already registered
-        const existingRegistration = await Registration.findOne({
-            event: eventId,
-            participant: participantId,
-            status: { $in: ['pending', 'confirmed'] }
-        });
+        // Check if already registered (only blocks normal events, merchandise handled via limit)
+        if (event.type !== 'merchandise') {
+            const existingRegistration = await Registration.findOne({
+                event: eventId,
+                participant: participantId,
+                status: { $in: ['pending', 'confirmed'] }
+            });
 
-        if (existingRegistration) {
-            return res.status(400).json({ message: 'You are already registered for this event' });
+            if (existingRegistration) {
+                return res.status(400).json({ message: 'You are already registered for this event' });
+            }
         }
 
         // Check eligibility
@@ -127,16 +136,41 @@ const createRegistration = async (req, res) => {
 
         // Check stock/limit and reserve
         let countIncremented = false;
+        let requestedQuantity = 1;
+
         if (event.type === 'merchandise') {
-            if (event.stock !== undefined && event.stock <= 0) {
-                return res.status(400).json({ message: 'Item is out of stock' });
+            requestedQuantity = parseInt(merchandiseDetails?.quantity) || 1;
+
+            if (event.stock !== undefined && event.stock < requestedQuantity) {
+                return res.status(400).json({ message: `Only ${event.stock} items left in stock` });
+            }
+
+            // Check purchase limit per user
+            if (event.purchaseLimitPerUser) {
+                // Find all existing merchandise registrations for this user & event
+                const existingPurchases = await Registration.find({
+                    event: eventId,
+                    participant: participantId,
+                    status: { $in: ['pending', 'confirmed'] }
+                });
+
+                // Sum up previously purchased quantities
+                const totalPurchased = existingPurchases.reduce((total, reg) => {
+                    return total + (reg.merchandiseDetails?.quantity || 1);
+                }, 0);
+
+                if (totalPurchased + requestedQuantity > event.purchaseLimitPerUser) {
+                    return res.status(400).json({
+                        message: `Purchase limit exceeded. You can only buy a maximum of ${event.purchaseLimitPerUser} items. You have already ordered ${totalPurchased}.`
+                    });
+                }
             }
 
             // If merchandise is completely free, it confirms instantly, so we must decrement stock atomically NOW.
             if (!event.registrationFee || event.registrationFee <= 0) {
                 const updatedEvent = await Event.findOneAndUpdate(
-                    { _id: eventId, stock: { $gt: 0 } },
-                    { $inc: { stock: -1 } },
+                    { _id: eventId, stock: { $gte: requestedQuantity } },
+                    { $inc: { stock: -requestedQuantity } },
                     { new: true }
                 );
                 if (!updatedEvent) {
@@ -157,6 +191,11 @@ const createRegistration = async (req, res) => {
             countIncremented = true;
         }
 
+        // Calculate total amount based on quantity for merchandise
+        const totalPaymentAmount = event.type === 'merchandise'
+            ? (event.registrationFee || 0) * (merchandiseDetails?.quantity || 1)
+            : (event.registrationFee || 0);
+
         // Create registration
         const registration = new Registration({
             event: eventId,
@@ -166,7 +205,7 @@ const createRegistration = async (req, res) => {
             formResponses: formResponses || {},
             merchandiseDetails: event.type === 'merchandise' ? merchandiseDetails : undefined,
             paymentRequired: event.registrationFee > 0,
-            paymentAmount: event.registrationFee || 0,
+            paymentAmount: totalPaymentAmount,
             status: event.registrationFee > 0 ? 'pending' : 'confirmed',
             ticketId: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 9)}` // Unique placeholder; updated after save
         });
@@ -389,14 +428,18 @@ const approvePayment = async (req, res) => {
 
         // Handle Merchandise Stock Expiration Atomic Decrement
         if (registration.registrationType === 'merchandise') {
+            const requestedQuantity = parseInt(registration.merchandiseDetails?.quantity) || 1;
+
             const updatedEvent = await Event.findOneAndUpdate(
-                { _id: registration.event._id, stock: { $gt: 0 } },
-                { $inc: { stock: -1 } },
+                { _id: registration.event._id, stock: { $gte: requestedQuantity } },
+                { $inc: { stock: -requestedQuantity } },
                 { new: true }
             );
             if (!updatedEvent) {
+                // Determine whether it's fully out of stock or just insufficient for this specific order
+                const currentEventData = await Event.findById(registration.event._id);
                 return res.status(400).json({
-                    message: 'Out of stock! Cannot approve this payment. Event inventory is empty.'
+                    message: `Cannot approve payment. Only ${currentEventData.stock} items left in stock, but order needs ${requestedQuantity}.`
                 });
             }
         }
@@ -504,8 +547,9 @@ const cancelRegistration = async (req, res) => {
 
         // Restore stock ONLY if it was completely free merchandise that instantly bypassed the pending queue
         if (registration.registrationType === 'merchandise' && !registration.paymentRequired) {
+            const requestedQuantity = parseInt(registration.merchandiseDetails?.quantity) || 1;
             await Event.findByIdAndUpdate(registration.event, {
-                $inc: { stock: 1 }
+                $inc: { stock: requestedQuantity }
             });
         }
 

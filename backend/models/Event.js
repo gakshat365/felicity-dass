@@ -70,6 +70,11 @@ const eventSchema = mongoose.Schema({
     // Payment
     upiId: { type: String }, // UPI ID for payment
 
+    // Team Registration Settings (for normal events only)
+    teamBased: { type: Boolean, default: false },
+    minTeamSize: { type: Number, default: 2, min: 2 },
+    maxTeamSize: { type: Number, default: 5, min: 2 },
+
     // Analytics (denormalized for performance)
     registrationCount: { type: Number, default: 0, min: 0 },
     viewCount: { type: Number, default: 0, min: 0 },

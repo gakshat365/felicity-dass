@@ -28,6 +28,7 @@ const CreateEvent = () => {
 
         // Merchandise specific
         stock: '',
+        purchaseLimitPerUser: '',
         merchandiseDetails: {
             sizes: [],
             colors: [],
@@ -38,6 +39,11 @@ const CreateEvent = () => {
         customFormTitle: '',
         customFormDescription: '',
         customForm: [],
+
+        // Team Settings (for normal events only)
+        teamBased: false,
+        minTeamSize: 2,
+        maxTeamSize: 5,
 
         // Step 5: Additional
         tags: [],
@@ -122,9 +128,15 @@ const CreateEvent = () => {
                 return true;
 
             case 3:
-                if (formData.type === 'merchandise' && !formData.stock) {
-                    toast.error('Stock is required for merchandise');
-                    return false;
+                if (formData.type === 'merchandise') {
+                    if (!formData.stock) {
+                        toast.error('Stock is required for merchandise');
+                        return false;
+                    }
+                    if (!formData.purchaseLimitPerUser) {
+                        toast.error('Purchase limit per user is required for merchandise');
+                        return false;
+                    }
                 }
                 return true;
 
@@ -175,7 +187,10 @@ const CreateEvent = () => {
                 status,
                 registrationFee: parseFloat(formData.registrationFee) || 0,
                 registrationLimit: formData.registrationLimit ? parseInt(formData.registrationLimit) : null,
-                stock: formData.stock ? parseInt(formData.stock) : null
+                stock: formData.stock ? parseInt(formData.stock) : null,
+                purchaseLimitPerUser: formData.purchaseLimitPerUser ? parseInt(formData.purchaseLimitPerUser) : null,
+                minTeamSize: parseInt(formData.minTeamSize) || 2,
+                maxTeamSize: parseInt(formData.maxTeamSize) || 5
             };
 
             const response = await axios.post('/events', eventData);
@@ -347,6 +362,48 @@ const CreateEvent = () => {
                                 </div>
                             </div>
 
+                            {/* Team Registration Settings (normal events only) */}
+                            {formData.type === 'normal' && (
+                                <div className="form-group" style={{ marginTop: '0.5rem' }}>
+                                    <label className="toggle-label" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.teamBased}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, teamBased: e.target.checked }))}
+                                        />
+                                        <span>Team-based Event</span>
+                                    </label>
+                                    <small>Participants register as teams. Tickets are issued once a team reaches the minimum size.</small>
+
+                                    {formData.teamBased && (
+                                        <div className="form-row" style={{ marginTop: '0.75rem' }}>
+                                            <div className="form-group">
+                                                <label>Min Team Size *</label>
+                                                <input
+                                                    type="number"
+                                                    name="minTeamSize"
+                                                    value={formData.minTeamSize}
+                                                    onChange={handleChange}
+                                                    min="2"
+                                                    max="20"
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Max Team Size *</label>
+                                                <input
+                                                    type="number"
+                                                    name="maxTeamSize"
+                                                    value={formData.maxTeamSize}
+                                                    onChange={handleChange}
+                                                    min="2"
+                                                    max="20"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {formData.type === 'merchandise' && (
                                 <>
                                     <div className="form-group">
@@ -358,6 +415,19 @@ const CreateEvent = () => {
                                             onChange={handleChange}
                                             min="1"
                                             placeholder="Available stock"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Purchase Limit Per User *</label>
+                                        <input
+                                            type="number"
+                                            name="purchaseLimitPerUser"
+                                            value={formData.purchaseLimitPerUser}
+                                            onChange={handleChange}
+                                            min="1"
+                                            placeholder="Max items per person"
                                             required
                                         />
                                     </div>

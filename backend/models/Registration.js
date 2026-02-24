@@ -28,7 +28,12 @@ const registrationSchema = new mongoose.Schema({
         default: 'pending'
     },
 
-    // Team (Simple Text Field)
+    // Team
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        default: null
+    },
     teamName: {
         type: String,
         default: null
