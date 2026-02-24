@@ -15,12 +15,34 @@ const Dashboard = () => {
     const [recentRegistrations, setRecentRegistrations] = useState([]);
     const [forYouEvents, setForYouEvents] = useState([]);
     const [loadingEvents, setLoadingEvents] = useState(true);
+    const [activeTab, setActiveTab] = useState('normal');
+    const [tabRegistrations, setTabRegistrations] = useState([]);
+    const [tabLoading, setTabLoading] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState(null);
 
     useEffect(() => {
         if (user?.role === 'participant') {
             fetchDashboardData();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (user?.role === 'participant') {
+            fetchTabRegistrations();
+        }
+    }, [activeTab, user]);
+
+    const fetchTabRegistrations = async () => {
+        try {
+            setTabLoading(true);
+            const { data } = await axios.get(`/registrations/my-registrations?type=${activeTab}`);
+            setTabRegistrations(data);
+        } catch (error) {
+            console.error('Tab data fetch error:', error);
+        } finally {
+            setTabLoading(false);
+        }
+    };
 
     const fetchDashboardData = async () => {
         try {
@@ -94,25 +116,58 @@ const Dashboard = () => {
                     </div>
                 )}
 
-                {/* Upcoming Events Section */}
+                {/* Registration History — Tabbed (Section 9.2) */}
                 <div className="dashboard-section">
                     <div className="section-header">
-                        <h2>🎫 Upcoming Events</h2>
+                        <h2>🎟️ My Registrations</h2>
                         <button className="see-all-btn" onClick={() => navigate('/my-registrations')}>
-                            See All →
+                            Full View →
                         </button>
                     </div>
-                    {loadingEvents ? (
+
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                        {[
+                            { id: 'normal', label: 'Normal' },
+                            { id: 'merchandise', label: 'Merchandise' },
+                            { id: 'completed', label: 'Completed' },
+                            { id: 'cancelled', label: 'Cancelled/Rejected' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    border: activeTab === tab.id ? '2px solid #58a6ff' : '1px solid #30363d',
+                                    background: activeTab === tab.id ? '#1f6feb22' : '#21262d',
+                                    color: activeTab === tab.id ? '#58a6ff' : '#8b949e',
+                                    cursor: 'pointer',
+                                    fontWeight: activeTab === tab.id ? 600 : 400,
+                                    fontSize: '0.9rem',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {tabLoading ? (
                         <div className="loading-small">Loading...</div>
-                    ) : upcomingEvents.length > 0 ? (
+                    ) : tabRegistrations.length > 0 ? (
                         <div className="upcoming-grid">
-                            {upcomingEvents.map(reg => (
-                                <div key={reg._id} className="upcoming-card" onClick={() => navigate(`/events/${reg.event?._id}`)}>
+                            {tabRegistrations.map(reg => (
+                                <div key={reg._id} className="upcoming-card" style={{ cursor: 'default' }}>
                                     <div className="upcoming-card-header">
                                         <span className={`status-dot ${reg.status}`}></span>
                                         <span className="event-type-tag">{reg.registrationType}</span>
                                     </div>
-                                    <h4>{reg.event?.name}</h4>
+                                    <h4
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => navigate(`/events/${reg.event?._id}`)}
+                                    >
+                                        {reg.event?.name}
+                                    </h4>
                                     <p className="upcoming-date">
                                         📅 {reg.event?.startDate ? format(new Date(reg.event.startDate), 'MMM dd, yyyy') : 'TBD'}
                                     </p>
@@ -120,40 +175,41 @@ const Dashboard = () => {
                                         by {reg.event?.organizer?.organizerName || 'Unknown'}
                                     </p>
                                     <span className={`upcoming-status ${reg.status}`}>{reg.status}</span>
+
+                                    {/* Clickable Ticket ID */}
+                                    {reg.ticketId && reg.status === 'confirmed' ? (
+                                        <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #30363d' }}>
+                                            <span style={{ fontSize: '0.8rem', color: '#8b949e' }}>Ticket: </span>
+                                            <span
+                                                onClick={() => setSelectedTicket(reg)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    color: '#58a6ff',
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: 600,
+                                                    textDecoration: 'underline',
+                                                    fontSize: '0.85rem'
+                                                }}
+                                                title="Click to view ticket"
+                                            >
+                                                {reg.ticketId}
+                                            </span>
+                                        </div>
+                                    ) : reg.status !== 'confirmed' && (
+                                        <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #30363d', fontSize: '0.8rem', color: '#8b949e' }}>
+                                            Ticket: {reg.status === 'rejected' || reg.status === 'cancelled' ? '—' : '⏳ Pending'}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <div className="empty-section">
-                            <p>You haven't registered for any upcoming events yet.</p>
+                            <p>No registrations in this category.</p>
                             <button className="btn btn-primary btn-sm" onClick={() => navigate('/events')}>Browse Events</button>
                         </div>
                     )}
                 </div>
-
-                {/* Participation History */}
-                {recentRegistrations.length > 0 && (
-                    <div className="dashboard-section">
-                        <div className="section-header">
-                            <h2>📜 Recent Participation</h2>
-                        </div>
-                        <div className="history-list">
-                            {recentRegistrations.map(reg => (
-                                <div key={reg._id} className="history-item">
-                                    <div className="history-info">
-                                        <span className="history-name">{reg.event?.name}</span>
-                                        <span className="history-date">
-                                            {reg.event?.startDate ? format(new Date(reg.event.startDate), 'MMM dd') : ''}
-                                        </span>
-                                    </div>
-                                    <span className={`history-status ${reg.attendanceStatus === 'Present' ? 'attended' : ''}`}>
-                                        {reg.attendanceStatus === 'Present' ? '✓ Attended' : 'Completed'}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {/* Quick Actions */}
                 <div className="dashboard-grid">
@@ -187,6 +243,47 @@ const Dashboard = () => {
                     <p>New events are added every week! Follow your favorite clubs to never miss an update.</p>
                 </div>
             </main>
+
+            {/* Ticket Modal */}
+            {selectedTicket && (
+                <div
+                    onClick={() => setSelectedTicket(null)}
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+                >
+                    <div
+                        style={{ background: '#161b22', borderRadius: '12px', maxWidth: '400px', width: '90%', border: '1px solid #30363d' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#e6edf3' }}>Event Ticket</h2>
+                            <button onClick={() => setSelectedTicket(null)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+                        </div>
+                        <div style={{ padding: '20px', textAlign: 'center' }}>
+                            {selectedTicket.ticketQRCode && (
+                                <div style={{ marginBottom: '16px' }}>
+                                    <img src={selectedTicket.ticketQRCode} alt="QR Code" style={{ maxWidth: '200px', borderRadius: '8px' }} />
+                                </div>
+                            )}
+                            <div style={{ marginBottom: '12px' }}>
+                                <div style={{ fontSize: '0.75rem', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '1px' }}>Ticket ID</div>
+                                <div style={{ fontFamily: 'monospace', fontSize: '1.2rem', fontWeight: 700, color: '#58a6ff' }}>{selectedTicket.ticketId}</div>
+                            </div>
+                            <h3 style={{ color: '#e6edf3', margin: '8px 0 4px' }}>{selectedTicket.event?.name}</h3>
+                            <p style={{ color: '#8b949e', fontSize: '0.9rem' }}>by {selectedTicket.event?.organizer?.organizerName}</p>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px', fontSize: '0.85rem', color: '#c9d1d9' }}>
+                                <span>📅 {selectedTicket.event?.startDate ? format(new Date(selectedTicket.event.startDate), 'MMM dd, yyyy') : 'TBD'}</span>
+                                <span>🎫 {selectedTicket.registrationType}</span>
+                            </div>
+                            {selectedTicket.teamName && (
+                                <p style={{ marginTop: '8px', color: '#c9d1d9', fontSize: '0.85rem' }}>👥 Team: {selectedTicket.teamName}</p>
+                            )}
+                            <p style={{ marginTop: '16px', fontSize: '0.8rem', color: '#8b949e' }}>
+                                Show this QR code at the event entrance
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

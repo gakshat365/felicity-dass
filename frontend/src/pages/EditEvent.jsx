@@ -296,16 +296,27 @@ const EditEvent = () => {
                                         onChange={handleChange} min="1" disabled={isReadOnly} />
                                 </div>
                                 <div className="form-group">
+                                    <label>Purchase Limit Per User</label>
+                                    <input type="number" name="purchaseLimitPerUser" value={formData.purchaseLimitPerUser}
+                                        onChange={handleChange} min="1" placeholder="Max items per person" disabled={isReadOnly} />
+                                </div>
+                                <div className="form-group">
                                     <label>Sizes (comma-separated)</label>
                                     <input type="text" value={formData.merchandiseDetails?.sizes?.join(', ') || ''}
                                         onChange={(e) => handleMerchandiseChange('sizes', e.target.value)}
-                                        disabled={isReadOnly} />
+                                        placeholder="S, M, L, XL" disabled={isReadOnly} />
                                 </div>
                                 <div className="form-group">
                                     <label>Colors (comma-separated)</label>
                                     <input type="text" value={formData.merchandiseDetails?.colors?.join(', ') || ''}
                                         onChange={(e) => handleMerchandiseChange('colors', e.target.value)}
-                                        disabled={isReadOnly} />
+                                        placeholder="Black, White, Blue" disabled={isReadOnly} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Variants (comma-separated)</label>
+                                    <input type="text" value={formData.merchandiseDetails?.variants?.join(', ') || ''}
+                                        onChange={(e) => handleMerchandiseChange('variants', e.target.value)}
+                                        placeholder="Hoodie, T-Shirt, Polo" disabled={isReadOnly} />
                                 </div>
                             </>
                         )}
