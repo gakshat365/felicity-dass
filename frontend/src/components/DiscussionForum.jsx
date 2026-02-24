@@ -20,8 +20,11 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
     useEffect(() => {
         fetchMessages();
 
-        // Socket setup
-        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+        // Socket setup — send auth token for server-side verification
+        const token = localStorage.getItem('token');
+        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+            auth: { token }
+        });
         socketRef.current.emit('join_room', `forum_${eventId}`);
 
         socketRef.current.on('receive_message', (data) => {
@@ -157,6 +160,81 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
     const isOrganizer = user._id === eventOrganizerId || user.role === 'admin';
     const filteredMessages = isPinnedOnly ? messages.filter(m => m.isPinned) : messages;
 
+    // Group messages into threads: top-level messages with their replies nested
+    const topLevelMessages = filteredMessages.filter(m => !m.parentId);
+    const repliesByParent = {};
+    filteredMessages.filter(m => m.parentId).forEach(m => {
+        const parentId = typeof m.parentId === 'object' ? m.parentId._id : m.parentId;
+        if (!repliesByParent[parentId]) repliesByParent[parentId] = [];
+        repliesByParent[parentId].push(m);
+    });
+
+    const renderMessage = (msg, isReply = false) => {
+        const parentMsg = isReply ? messages.find(m => m._id === (typeof msg.parentId === 'object' ? msg.parentId._id : msg.parentId)) : null;
+        return (
+            <div key={msg._id} className={`message-item ${msg.isPinned ? 'pinned' : ''} ${isReply ? 'reply-message' : ''}`} style={isReply ? { marginLeft: '2rem', borderLeft: '2px solid #30363d', paddingLeft: '1rem' } : {}}>
+                <div className="msg-avatar">
+                    {msg.user.organizerName ? '🏢' : '👤'}
+                </div>
+                <div className="msg-content">
+                    <div className="msg-meta">
+                        <span className="msg-author">
+                            {msg.user.organizerName || `${msg.user.firstName} ${msg.user.lastName}`}
+                            {msg.user.role === 'organizer' && <span className="badge-org">Organizer</span>}
+                        </span>
+                        <span className="msg-time">{format(new Date(msg.createdAt), 'HH:mm')}</span>
+                    </div>
+
+                    {isReply && parentMsg && (
+                        <div className="replying-to" style={{ background: '#161b22', borderLeft: '3px solid #58a6ff', padding: '4px 8px', marginBottom: '4px', fontSize: '0.8rem', color: '#8b949e', borderRadius: '4px' }}>
+                            ↩️ <strong>{parentMsg.user.organizerName || parentMsg.user.firstName}</strong>: {parentMsg.content.substring(0, 80)}{parentMsg.content.length > 80 ? '...' : ''}
+                        </div>
+                    )}
+
+                    <div className="msg-text">{msg.content}</div>
+
+                    <div className="msg-footer">
+                        <div className="reactions">
+                            {['like', 'heart', 'party', 'question'].map(type => {
+                                const reaction = msg.reactions.find(r => r.type === type);
+                                const count = reaction?.users.length || 0;
+                                const hasReacted = reaction?.users.includes(user._id);
+
+                                return (
+                                    <button
+                                        key={type}
+                                        className={`reaction-btn ${hasReacted ? 'active' : ''}`}
+                                        onClick={() => handleReaction(msg._id, type)}
+                                    >
+                                        {type === 'like' && '👍'}
+                                        {type === 'heart' && '❤️'}
+                                        {type === 'party' && '🎉'}
+                                        {type === 'question' && '❓'}
+                                        {count > 0 && <span className="count">{count}</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="msg-actions">
+                            {!msg.parentId && (
+                                <button onClick={() => setReplyTo({ id: msg._id, name: msg.user.firstName || msg.user.organizerName })} className="action-link">Reply</button>
+                            )}
+                            {isOrganizer && (
+                                <button onClick={() => handlePin(msg._id)} className="action-link">
+                                    {msg.isPinned ? 'Unpin' : 'Pin'}
+                                </button>
+                            )}
+                            {(msg.user._id === user._id || isOrganizer) && (
+                                <button onClick={() => handleDelete(msg._id)} className="action-link delete">Delete</button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="forum-container">
             <div className="forum-header">
@@ -174,66 +252,10 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
             </div>
 
             <div className="messages-display">
-                {filteredMessages.map(msg => (
-                    <div key={msg._id} className={`message-item ${msg.isPinned ? 'pinned' : ''}`}>
-                        <div className="msg-avatar">
-                            {msg.user.organizerName ? '🏢' : '👤'}
-                        </div>
-                        <div className="msg-content">
-                            <div className="msg-meta">
-                                <span className="msg-author">
-                                    {msg.user.organizerName || `${msg.user.firstName} ${msg.user.lastName}`}
-                                    {msg.user.role === 'organizer' && <span className="badge-org">Organizer</span>}
-                                </span>
-                                <span className="msg-time">{format(new Date(msg.createdAt), 'HH:mm')}</span>
-                            </div>
-
-                            {msg.parentId && (
-                                <div className="replying-to">
-                                    Replying to a message...
-                                </div>
-                            )}
-
-                            <div className="msg-text">{msg.content}</div>
-
-                            <div className="msg-footer">
-                                <div className="reactions">
-                                    {['like', 'heart', 'party', 'question'].map(type => {
-                                        const reaction = msg.reactions.find(r => r.type === type);
-                                        const count = reaction?.users.length || 0;
-                                        const hasReacted = reaction?.users.includes(user._id);
-
-                                        return (
-                                            <button
-                                                key={type}
-                                                className={`reaction-btn ${hasReacted ? 'active' : ''}`}
-                                                onClick={() => handleReaction(msg._id, type)}
-                                            >
-                                                {type === 'like' && '👍'}
-                                                {type === 'heart' && '❤️'}
-                                                {type === 'party' && '🎉'}
-                                                {type === 'question' && '❓'}
-                                                {count > 0 && <span className="count">{count}</span>}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                <div className="msg-actions">
-                                    {!msg.parentId && (
-                                        <button onClick={() => setReplyTo({ id: msg._id, name: msg.user.firstName })} className="action-link">Reply</button>
-                                    )}
-                                    {isOrganizer && (
-                                        <button onClick={() => handlePin(msg._id)} className="action-link">
-                                            {msg.isPinned ? 'Unpin' : 'Pin'}
-                                        </button>
-                                    )}
-                                    {(msg.user._id === user._id || isOrganizer) && (
-                                        <button onClick={() => handleDelete(msg._id)} className="action-link delete">Delete</button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                {topLevelMessages.map(msg => (
+                    <div key={msg._id} className="thread-group">
+                        {renderMessage(msg)}
+                        {repliesByParent[msg._id] && repliesByParent[msg._id].map(reply => renderMessage(reply, true))}
                     </div>
                 ))}
                 <div ref={messagesEndRef} />

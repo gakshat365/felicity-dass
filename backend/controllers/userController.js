@@ -46,14 +46,12 @@ const getProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Calculate and update profile completeness
+        // Calculate profile completeness (read-only, no save on GET)
         const completeness = calculateProfileCompleteness(user);
-        if (user.profileCompleteness !== completeness) {
-            user.profileCompleteness = completeness;
-            await user.save();
-        }
+        const userObj = user.toObject();
+        userObj.profileCompleteness = completeness;
 
-        res.json(user);
+        res.json(userObj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -74,8 +72,8 @@ const updateProfile = async (req, res) => {
 
         // Fields that can be updated
         const allowedUpdates = {
-            participant: ['firstName', 'lastName', 'interests', 'following', 'collegeName', 'contactNumber'],
-            organizer: ['firstName', 'lastName', 'organizerName', 'description', 'contactEmail', 'contactNumber', 'discordWebhookUrl'],
+            participant: ['firstName', 'lastName', 'interests', 'collegeName', 'contactNumber'],
+            organizer: ['firstName', 'lastName', 'organizerName', 'description', 'contactEmail', 'contactNumber', 'discordWebhookUrl', 'category'],
             admin: ['firstName', 'lastName', 'contactNumber']
         };
 
@@ -165,7 +163,7 @@ const getOrganizers = async (req, res) => {
     try {
         const { category, search } = req.query;
 
-        let query = { role: 'organizer', isApproved: true };
+        let query = { role: 'organizer', status: 'active' };
 
         // Filter by category if provided
         if (category && ['club', 'council', 'fest-team'].includes(category)) {
@@ -304,13 +302,20 @@ const testWebhook = async (req, res) => {
         const { url } = req.body;
         const { sendEventNotification } = require('../services/discordService');
 
+        // SSRF protection: only allow Discord webhook URLs
+        if (!url || !url.startsWith('https://discord.com/api/webhooks/')) {
+            return res.status(400).json({ message: 'Invalid webhook URL. Only Discord webhook URLs are allowed.' });
+        }
+
         // Send a test message payload
         const mockEvent = {
             name: "Test Connection",
+            description: "This is a test webhook message.",
             organizer: { organizerName: req.user.organizerName || "Organization" },
             type: "Test",
             registrationFee: 0,
             registrationDeadline: new Date(),
+            startDate: new Date(),
             _id: "test"
         };
 

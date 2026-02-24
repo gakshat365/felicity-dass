@@ -3,8 +3,6 @@ const router = express.Router();
 const {
     getStats,
     getOrganizers,
-    approveOrganizer,
-    rejectOrganizer,
     updateOrganizerStatus,
     getAllEvents,
     createOrganizer,
@@ -22,8 +20,6 @@ router.use(authorize('admin'));
 router.get('/stats', getStats);
 router.get('/organizers', getOrganizers);
 router.post('/organizers', createOrganizer);
-router.patch('/organizers/:id/approve', approveOrganizer);
-router.patch('/organizers/:id/reject', rejectOrganizer);
 router.patch('/organizers/:id/status', updateOrganizerStatus);
 router.delete('/organizers/:id', deleteOrganizer);
 router.get('/events', getAllEvents);

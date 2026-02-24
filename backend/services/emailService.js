@@ -1,14 +1,19 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter (will be configured with environment variables)
+// Create transporter once and reuse with connection pooling
+let _transporter = null;
 const createTransporter = () => {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_APP_PASSWORD
-        }
-    });
+    if (!_transporter) {
+        _transporter = nodemailer.createTransport({
+            service: 'gmail',
+            pool: true,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_APP_PASSWORD
+            }
+        });
+    }
+    return _transporter;
 };
 
 /**

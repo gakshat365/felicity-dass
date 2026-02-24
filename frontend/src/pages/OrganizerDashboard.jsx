@@ -153,18 +153,24 @@ const OrganizerDashboard = () => {
                 )}
             </div>
 
-            {/* Recent Activity / Analytics Placeholder */}
+            {/* Recent Activity / Analytics */}
             <div className="analytics-preview">
-                <h2>📈 Platform Growth</h2>
+                <h2>📈 Event Performance</h2>
                 <div className="chart-placeholder">
-                    {/* TODO: use Chart.js here */}
                     <div className="bar-container">
-                        {[40, 70, 45, 90, 65, 80, 95].map((h, i) => (
-                            <div key={i} className="bar" style={{ height: `${h}%` }}></div>
-                        ))}
+                        {events.slice(0, 7).map((event, i) => {
+                            const maxReg = Math.max(...events.slice(0, 7).map(e => e.registrationCount || 1), 1);
+                            const height = Math.max(((event.registrationCount || 0) / maxReg) * 100, 5);
+                            return <div key={i} className="bar" style={{ height: `${height}%` }} title={`${event.name}: ${event.registrationCount || 0} registrations`}></div>;
+                        })}
+                        {events.length === 0 && (
+                            <div style={{ color: '#8b949e', textAlign: 'center', width: '100%', padding: '2rem' }}>No events yet</div>
+                        )}
                     </div>
                     <div className="chart-labels">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        {events.slice(0, 7).map((event, i) => (
+                            <span key={i} title={event.name}>{event.name?.substring(0, 3) || ''}</span>
+                        ))}
                     </div>
                 </div>
             </div>

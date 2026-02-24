@@ -11,7 +11,7 @@ const sendEventNotification = async (webhookUrl, event) => {
     try {
         const embed = {
             title: `🚀 New Event: ${event.name}`,
-            description: event.description.substring(0, 2048),
+            description: (event.description || '').substring(0, 2048),
             url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/events/${event._id}`,
             color: 5814783, // GitHub Blue
             fields: [

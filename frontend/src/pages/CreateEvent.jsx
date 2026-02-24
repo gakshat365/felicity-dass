@@ -164,6 +164,7 @@ const CreateEvent = () => {
         radio: 'mcq-single',
         dropdown: 'mcq-single',
         checkbox: 'mcq-multiple',
+        file: 'file',
     };
 
     const handleSubmit = async (status = 'draft') => {

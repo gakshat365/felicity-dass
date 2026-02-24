@@ -53,3 +53,6 @@ backend/tests/
 
 # Uploads directory
 backend/uploads/
+
+# Issues report
+issues.md

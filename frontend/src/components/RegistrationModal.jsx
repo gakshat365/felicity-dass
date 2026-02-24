@@ -142,39 +142,42 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                         <div className="custom-form-section">
                             <h3>{event.customFormTitle || 'Registration Details'}</h3>
                             {event.customFormDescription && <p className="custom-form-desc">{event.customFormDescription}</p>}
-                            {event.customForm.map((field, index) => (
+                            {event.customForm.map((field, index) => {
+                                const label = field.questionText || field.label;
+                                const type = field.questionType || field.type;
+                                return (
                                 <div key={index} className="form-group">
                                     <label>
-                                        {field.label} {field.required && <span className="required">*</span>}
+                                        {label} {field.required && <span className="required">*</span>}
                                     </label>
 
-                                    {field.type === 'text' && (
+                                    {(type === 'short' || type === 'text') && (
                                         <input
                                             type="text"
-                                            value={formData[field.label] || ''}
+                                            value={formData[label] || ''}
                                             onChange={(e) => {
                                                 const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                                if (words.length > 50) {
-                                                    toast.error('Short answer cannot exceed 50 words');
+                                                if (words.length > (field.wordLimit || 50)) {
+                                                    toast.error(`Short answer cannot exceed ${field.wordLimit || 50} words`);
                                                     return;
                                                 }
-                                                handleFormChange(field.label, e.target.value);
+                                                handleFormChange(label, e.target.value);
                                             }}
                                             required={field.required}
                                             placeholder={field.placeholder || ''}
                                         />
                                     )}
 
-                                    {field.type === 'textarea' && (
+                                    {(type === 'long' || type === 'textarea') && (
                                         <textarea
-                                            value={formData[field.label] || ''}
+                                            value={formData[label] || ''}
                                             onChange={(e) => {
                                                 const words = e.target.value.trim().split(/\s+/).filter(Boolean);
-                                                if (words.length > 200) {
-                                                    toast.error('Long answer cannot exceed 200 words');
+                                                if (words.length > (field.wordLimit || 200)) {
+                                                    toast.error(`Long answer cannot exceed ${field.wordLimit || 200} words`);
                                                     return;
                                                 }
-                                                handleFormChange(field.label, e.target.value);
+                                                handleFormChange(label, e.target.value);
                                             }}
                                             required={field.required}
                                             placeholder={field.placeholder || ''}
@@ -182,42 +185,60 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                         />
                                     )}
 
-                                    {field.type === 'number' && (
+                                    {type === 'number' && (
                                         <input
                                             type="number"
-                                            value={formData[field.label] || ''}
-                                            onChange={(e) => handleFormChange(field.label, e.target.value)}
+                                            value={formData[label] || ''}
+                                            onChange={(e) => handleFormChange(label, e.target.value)}
                                             required={field.required}
                                             placeholder={field.placeholder || ''}
                                         />
                                     )}
 
-                                    {field.type === 'dropdown' && (
-                                        <select
-                                            value={formData[field.label] || ''}
-                                            onChange={(e) => handleFormChange(field.label, e.target.value)}
-                                            required={field.required}
-                                        >
-                                            <option value="">Select an option</option>
-                                            {field.options && field.options.map((option, i) => (
-                                                <option key={i} value={option}>{option}</option>
-                                            ))}
-                                        </select>
+                                    {(type === 'mcq-single' || type === 'dropdown' || type === 'radio') && (
+                                        field.options && field.options.length <= 5 ? (
+                                            <div className="radio-group">
+                                                {field.options.map((option, i) => (
+                                                    <label key={i} className="radio-label">
+                                                        <input
+                                                            type="radio"
+                                                            name={label}
+                                                            value={option}
+                                                            checked={formData[label] === option}
+                                                            onChange={(e) => handleFormChange(label, e.target.value)}
+                                                            required={field.required}
+                                                        />
+                                                        {option}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={formData[label] || ''}
+                                                onChange={(e) => handleFormChange(label, e.target.value)}
+                                                required={field.required}
+                                            >
+                                                <option value="">Select an option</option>
+                                                {field.options && field.options.map((option, i) => (
+                                                    <option key={i} value={option}>{option}</option>
+                                                ))}
+                                            </select>
+                                        )
                                     )}
 
-                                    {field.type === 'checkbox' && (
+                                    {(type === 'mcq-multiple' || type === 'checkbox') && (
                                         <div className="checkbox-group">
                                             {field.options && field.options.map((option, i) => (
                                                 <label key={i} className="checkbox-label">
                                                     <input
                                                         type="checkbox"
-                                                        checked={formData[field.label]?.includes(option) || false}
+                                                        checked={formData[label]?.includes(option) || false}
                                                         onChange={(e) => {
-                                                            const currentValues = formData[field.label] || [];
+                                                            const currentValues = formData[label] || [];
                                                             if (e.target.checked) {
-                                                                handleFormChange(field.label, [...currentValues, option]);
+                                                                handleFormChange(label, [...currentValues, option]);
                                                             } else {
-                                                                handleFormChange(field.label, currentValues.filter(v => v !== option));
+                                                                handleFormChange(label, currentValues.filter(v => v !== option));
                                                             }
                                                         }}
                                                     />
@@ -227,44 +248,24 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                         </div>
                                     )}
 
-                                    {field.type === 'radio' && (
-                                        <div className="radio-group">
-                                            {field.options && field.options.map((option, i) => (
-                                                <label key={i} className="radio-label">
-                                                    <input
-                                                        type="radio"
-                                                        name={field.label}
-                                                        value={option}
-                                                        checked={formData[field.label] === option}
-                                                        onChange={(e) => handleFormChange(field.label, e.target.value)}
-                                                        required={field.required}
-                                                    />
-                                                    {option}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {field.type === 'file' && (
+                                    {type === 'file' && (
                                         <div className="file-upload-group">
                                             <input
                                                 type="file"
                                                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                                 onChange={(e) => {
                                                     const file = e.target.files[0];
-                                                    if (file && file.size > 5 * 1024 * 1024) { // 5MB limit
+                                                    if (file && file.size > 5 * 1024 * 1024) {
                                                         toast.error('File size should be less than 5MB');
                                                         e.target.value = '';
                                                         return;
                                                     }
-                                                    // TODO: upload this to S3/Cloudinary and store the URL
-                                                    // For this assignment, we'll store the filename to represent a successful upload
                                                     if (file) {
-                                                        handleFormChange(field.label, `[File Uploaded] ${file.name}`);
+                                                        handleFormChange(label, `[File Uploaded] ${file.name}`);
                                                         toast.success('File attached successfully (simulated)');
                                                     } else {
                                                         const currentData = { ...formData };
-                                                        delete currentData[field.label];
+                                                        delete currentData[label];
                                                         setFormData(currentData);
                                                     }
                                                 }}
@@ -275,7 +276,8 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            );
+                            })}
                         </div>
                     )}
 

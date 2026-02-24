@@ -16,15 +16,12 @@ const getStats = async (req, res) => {
         const totalParticipants = await User.countDocuments({ role: 'participant' });
         const totalEvents = await Event.countDocuments();
         const totalRegistrations = await Registration.countDocuments();
-        const pendingOrganizers = await User.countDocuments({ role: 'organizer', isApproved: false });
-
         res.json({
             totalUsers,
             totalOrganizers,
             totalParticipants,
             totalEvents,
-            totalRegistrations,
-            pendingOrganizers
+            totalRegistrations
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -58,60 +55,15 @@ const getOrganizers = async (req, res) => {
 };
 
 /**
- * @desc    Approve an organizer
- * @route   PATCH /api/admin/organizers/:id/approve
- * @access  Private (Admin only)
- */
-const approveOrganizer = async (req, res) => {
-    try {
-        const organizer = await User.findById(req.params.id);
-        if (!organizer || organizer.role !== 'organizer') {
-            return res.status(404).json({ message: 'Organizer not found' });
-        }
-
-        organizer.isApproved = true;
-        organizer.approvalStatus = 'approved';
-        await organizer.save();
-
-        res.json({ message: 'Organizer approved successfully', organizer });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * @desc    Reject an organizer
- * @route   PATCH /api/admin/organizers/:id/reject
- * @access  Private (Admin only)
- */
-const rejectOrganizer = async (req, res) => {
-    try {
-        const { reason } = req.body;
-        const organizer = await User.findById(req.params.id);
-        if (!organizer || organizer.role !== 'organizer') {
-            return res.status(404).json({ message: 'Organizer not found' });
-        }
-
-        organizer.approvalStatus = 'rejected';
-        organizer.rejectionReason = reason;
-        await organizer.save();
-
-        res.json({ message: 'Organizer rejected', organizer });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * @desc    Toggle organizer account status (active/suspended)
+ * @desc    Update organizer account status (active/suspended/archived)
  * @route   PATCH /api/admin/organizers/:id/status
  * @access  Private (Admin only)
  */
 const updateOrganizerStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        if (!['active', 'suspended'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status' });
+        if (!['active', 'suspended', 'archived'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status. Must be active, suspended, or archived.' });
         }
 
         const organizer = await User.findByIdAndUpdate(
@@ -176,8 +128,6 @@ const createOrganizer = async (req, res) => {
             organizerName,
             category,
             description,
-            isApproved: true,
-            approvalStatus: 'approved',
             status: 'active'
         });
 
@@ -271,13 +221,29 @@ const deleteOrganizer = async (req, res) => {
             return res.status(404).json({ message: 'Organizer not found' });
         }
 
-        // We'll do a soft delete/disable as recommended in many cases, or hard delete
-        // Requirement 11.2 says "Remove/Disable/Archive"
-        await User.findByIdAndDelete(req.params.id);
-        // Also delete their events to keep data clean (optional, but good for demo)
-        await Event.deleteMany({ organizer: req.params.id });
+        // Get all event IDs for this organizer to clean up related data
+        const eventIds = await Event.find({ organizer: req.params.id }).select('_id');
+        const eventIdList = eventIds.map(e => e._id);
 
-        res.json({ message: 'Organizer and their events removed successfully' });
+        // Clean up all related data
+        if (eventIdList.length > 0) {
+            const Feedback = require('../models/Feedback');
+            const Message = require('../models/Message');
+            const Notification = require('../models/Notification');
+            const Team = require('../models/Team');
+
+            await Registration.deleteMany({ event: { $in: eventIdList } });
+            await Team.deleteMany({ event: { $in: eventIdList } });
+            await Message.deleteMany({ event: { $in: eventIdList } });
+            await Feedback.deleteMany({ event: { $in: eventIdList } });
+            await Notification.deleteMany({ link: { $regex: eventIdList.map(id => id.toString()).join('|') } });
+        }
+
+        // Delete events and organizer
+        await Event.deleteMany({ organizer: req.params.id });
+        await User.findByIdAndDelete(req.params.id);
+
+        res.json({ message: 'Organizer and all associated data removed successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -286,8 +252,6 @@ const deleteOrganizer = async (req, res) => {
 module.exports = {
     getStats,
     getOrganizers,
-    approveOrganizer,
-    rejectOrganizer,
     updateOrganizerStatus,
     getAllEvents,
     createOrganizer,

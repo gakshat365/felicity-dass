@@ -114,6 +114,23 @@ const OrganizerEventDetail = () => {
         }
     };
 
+    const handleStatusChange = async (newStatus) => {
+        const confirmMsg = {
+            ongoing: 'Mark this event as ongoing? Registrations will close.',
+            completed: 'Mark this event as completed?',
+            cancelled: 'Cancel this event? This cannot be undone.',
+            published: 'Publish this event?'
+        };
+        if (!window.confirm(confirmMsg[newStatus] || `Change status to ${newStatus}?`)) return;
+        try {
+            await axios.patch(`/events/${id}`, { status: newStatus });
+            toast.success(`Event status changed to ${newStatus}`);
+            fetchEventData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update status');
+        }
+    };
+
     if (loading) return <div className="loading">Loading event details...</div>;
 
     const stats = {
@@ -133,6 +150,26 @@ const OrganizerEventDetail = () => {
                     <h1>{event.name} Dashboard</h1>
                 </div>
                 <div className="header-actions">
+                    {event.status === 'draft' && (
+                        <button onClick={() => handleStatusChange('published')} className="btn-publish" style={{ padding: '8px 16px', background: '#238636', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                            Publish Event
+                        </button>
+                    )}
+                    {event.status === 'published' && (
+                        <button onClick={() => handleStatusChange('ongoing')} className="btn-ongoing" style={{ padding: '8px 16px', background: '#1f6feb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                            🔴 Mark as Ongoing
+                        </button>
+                    )}
+                    {['published', 'ongoing'].includes(event.status) && (
+                        <button onClick={() => handleStatusChange('completed')} style={{ padding: '8px 16px', background: '#8b949e', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
+                            ✅ Mark Completed
+                        </button>
+                    )}
+                    {['draft', 'published'].includes(event.status) && (
+                        <button onClick={() => navigate(`/events/edit/${event._id}`)} style={{ padding: '8px 16px', background: '#21262d', color: '#c9d1d9', border: '1px solid #30363d', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
+                            ✏️ Edit
+                        </button>
+                    )}
                     <button onClick={() => navigate('/scanner')} className="scanner-link-btn">Open Scanner</button>
                     <button onClick={exportCSV} className="export-btn">Export CSV</button>
                 </div>

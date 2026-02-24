@@ -89,20 +89,33 @@ const registerUser = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide email and password' });
+        }
 
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user.id,
-            firstName: user.firstName,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user.id),
-        });
-    } else {
-        res.status(401).json({ message: 'Invalid credentials' });
+        const user = await User.findOne({ email });
+
+        if (user && (await user.matchPassword(password))) {
+            // Block disabled/archived accounts (§11.2: removed clubs cannot log in)
+            if (user.status === 'suspended' || user.status === 'archived') {
+                return res.status(403).json({ message: 'Your account has been disabled by the Admin.' });
+            }
+
+            res.json({
+                _id: user.id,
+                firstName: user.firstName,
+                email: user.email,
+                role: user.role,
+                token: generateToken(user.id),
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid credentials' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -147,8 +160,6 @@ const getMe = async (req, res) => {
             contactEmail: user.contactEmail,
             discordWebhookUrl: user.discordWebhookUrl,
             followerCount: user.followerCount,
-            isApproved: user.isApproved,
-            approvalStatus: user.approvalStatus,
         });
     }
 
@@ -173,6 +184,11 @@ const requestPasswordReset = async (req, res) => {
 
         if (!user) {
             return res.status(404).json({ message: 'User with this email not found' });
+        }
+
+        // Only organizers can request password reset via admin workflow
+        if (user.role !== 'organizer') {
+            return res.status(403).json({ message: 'Password reset requests are only available for organizer accounts' });
         }
 
         // Check if a pending request already exists

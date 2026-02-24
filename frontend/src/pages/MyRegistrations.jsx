@@ -190,12 +190,22 @@ const MyRegistrations = () => {
                                         <div className="ticket-id-section">
                                             <span className="ticket-label">Ticket:</span>
                                             {registration.status === 'confirmed' ? (
-                                                <button
-                                                    className="ticket-id-btn"
-                                                    onClick={() => setSelectedTicket(registration)}
-                                                >
-                                                    View Ticket
-                                                </button>
+                                                <>
+                                                    <span
+                                                        className="ticket-id-clickable"
+                                                        onClick={() => setSelectedTicket(registration)}
+                                                        style={{ cursor: 'pointer', color: '#58a6ff', fontFamily: 'monospace', fontWeight: 600, textDecoration: 'underline' }}
+                                                        title="Click to view full ticket"
+                                                    >
+                                                        {registration.ticketId}
+                                                    </span>
+                                                    <button
+                                                        className="ticket-id-btn"
+                                                        onClick={() => setSelectedTicket(registration)}
+                                                    >
+                                                        View Ticket
+                                                    </button>
+                                                </>
                                             ) : (
                                                 <span className="ticket-wait-msg">
                                                     {registration.status === 'rejected' ? '❌ Rejected' : '⏳ Available after approval'}

@@ -38,6 +38,7 @@ const Navbar = () => {
                         <Link to="/events" className={`nav-link ${isActive('/events') ? 'active' : ''}`}>Browse Events</Link>
                         <Link to="/events/create" className={`nav-link ${isActive('/events/create') ? 'active' : ''}`}>Create Event</Link>
                         <Link to="/events/my-events" className={`nav-link ${isActive('/events/my-events') ? 'active' : ''}`}>My Events</Link>
+                        <Link to="/events/my-events?filter=ongoing" className={`nav-link ${location.search.includes('filter=ongoing') ? 'active' : ''}`}>Ongoing Events</Link>
                         <Link to="/profile" className={`nav-link ${isActive('/profile') ? 'active' : ''}`}>Profile</Link>
                     </>
                 );

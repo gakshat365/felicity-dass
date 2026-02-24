@@ -95,14 +95,36 @@ function App() {
           />
           <Route
             path="/organizers"
-            element={<OrganizersList />}
+            element={
+              <ProtectedRoute>
+                <OrganizersList />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/organizers/:id"
-            element={<OrganizerProfile />}
+            element={
+              <ProtectedRoute>
+                <OrganizerProfile />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/events" element={<BrowseEvents />} />
-          <Route path="/events/:id" element={<EventDetails />} />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <BrowseEvents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:id"
+            element={
+              <ProtectedRoute>
+                <EventDetails />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/events/create"
             element={

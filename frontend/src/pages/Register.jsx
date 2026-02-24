@@ -95,7 +95,7 @@ const Register = () => {
         setLoading(false);
 
         if (success) {
-            navigate('/dashboard');
+            navigate('/onboarding');
         }
     };
 

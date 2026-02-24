@@ -48,6 +48,7 @@ const Profile = () => {
                 contactNumber: user.contactNumber || '',
                 organizerName: user.organizerName || '',
                 description: user.description || '',
+                category: user.category || 'club',
                 contactEmail: user.contactEmail || '',
                 discordWebhookUrl: user.discordWebhookUrl || ''
             });
@@ -227,11 +228,18 @@ const Profile = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label">Category (Locked)</label>
-                                        <div className="badge-display">
-                                            <span className="badge badge-warning">{user.category}</span>
-                                        </div>
-                                        <span className="helper-text">Category cannot be changed</span>
+                                        <label className="form-label">Category</label>
+                                        <select
+                                            name="category"
+                                            className="form-input"
+                                            value={formData.category}
+                                            onChange={handleChange}
+                                            disabled={!editing}
+                                        >
+                                            <option value="club">Club</option>
+                                            <option value="council">Council</option>
+                                            <option value="fest-team">Fest Team</option>
+                                        </select>
                                     </div>
 
                                     <div className="form-group">

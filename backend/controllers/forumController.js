@@ -149,11 +149,17 @@ const toggleReaction = async (req, res) => {
         const message = await Message.findById(messageId);
         if (!message) return res.status(404).json({ message: 'Message not found' });
 
+        // Validate reaction type
+        const validReactionTypes = ['like', 'heart', 'party', 'question'];
+        if (!validReactionTypes.includes(type)) {
+            return res.status(400).json({ message: 'Invalid reaction type' });
+        }
+
         let reaction = message.reactions.find(r => r.type === type);
         if (!reaction) {
             message.reactions.push({ type, users: [userId] });
         } else {
-            const userIndex = reaction.users.indexOf(userId);
+            const userIndex = reaction.users.findIndex(u => u.toString() === userId.toString());
             if (userIndex === -1) {
                 reaction.users.push(userId);
             } else {

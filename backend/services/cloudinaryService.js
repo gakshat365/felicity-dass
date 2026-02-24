@@ -1,7 +1,10 @@
 const cloudinary = require('cloudinary').v2;
 
-// Configure Cloudinary (will use environment variables)
+// Configure Cloudinary once at module load
+let cloudinaryConfigured = false;
 const configureCloudinary = () => {
+    if (cloudinaryConfigured) return true;
+
     if (process.env.CLOUDINARY_CLOUD_NAME &&
         process.env.CLOUDINARY_API_KEY &&
         process.env.CLOUDINARY_API_SECRET) {
@@ -12,6 +15,7 @@ const configureCloudinary = () => {
             api_secret: process.env.CLOUDINARY_API_SECRET
         });
 
+        cloudinaryConfigured = true;
         console.log('✅ Cloudinary configured');
         return true;
     }
@@ -19,6 +23,9 @@ const configureCloudinary = () => {
     console.log('⚠️  Cloudinary not configured (missing environment variables)');
     return false;
 };
+
+// Attempt initial configuration
+configureCloudinary();
 
 /**
  * Upload payment proof to Cloudinary

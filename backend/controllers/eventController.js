@@ -46,6 +46,20 @@ const createEvent = async (req, res) => {
             return res.status(400).json({ message: 'Custom form cannot have more than 25 questions' });
         }
 
+        // Validate dates
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            return res.status(400).json({ message: 'End date must be after start date' });
+        }
+        if (registrationDeadline && startDate && new Date(registrationDeadline) > new Date(startDate)) {
+            return res.status(400).json({ message: 'Registration deadline must be before start date' });
+        }
+        if (startDate && new Date(startDate) < new Date()) {
+            // Only enforce for published events
+            if (status === 'published') {
+                return res.status(400).json({ message: 'Start date must be in the future for published events' });
+            }
+        }
+
         // Process custom form - ensure every field has a questionId
         if (customForm && customForm.length > 0) {
             customForm.forEach((field, index) => {
@@ -170,7 +184,10 @@ const getEvents = async (req, res) => {
 
         // Search by name, description, tags, or organizer name
         if (search) {
-            const searchRegex = new RegExp(search.split(' ').join('|'), 'i');
+            // Escape special regex characters to prevent ReDoS
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const searchTerms = escapedSearch.split(/\s+/).filter(Boolean).join('|');
+            const searchRegex = new RegExp(searchTerms, 'i');
 
             // To search by organizer name, we first find organizers matching the name
             const matchingOrganizers = await User.find({
@@ -179,10 +196,11 @@ const getEvents = async (req, res) => {
             }).select('_id');
             const organizerIds = matchingOrganizers.map(o => o._id);
 
+            // For tags, use $regex on each element instead of $in with a RegExp
             query.$or = [
                 { name: { $regex: searchRegex } },
                 { description: { $regex: searchRegex } },
-                { tags: { $in: [searchRegex] } },
+                { tags: { $regex: searchRegex } },
                 { organizer: { $in: organizerIds } }
             ];
         }
@@ -388,7 +406,8 @@ const updateEvent = async (req, res) => {
             published: ['description', 'registrationDeadline', 'registrationLimit', 'tags', 'category', 'status'], // Limited edits
             ongoing: ['status'], // Only status change
             completed: ['status'], // Only status change
-            cancelled: [] // No edits
+            cancelled: [], // No edits
+            closed: [] // No edits
         };
 
         const allowed = allowedUpdates[event.status];
@@ -411,12 +430,12 @@ const updateEvent = async (req, res) => {
                         if (field === 'registrationLimit' && req.body[field] < event.registrationLimit) {
                             return res.status(400).json({ message: 'Can only increase registration limit' });
                         }
-                        if (field === 'status' && !['ongoing', 'completed', 'cancelled'].includes(req.body[field])) {
+                        if (field === 'status' && !['ongoing', 'completed', 'closed'].includes(req.body[field])) {
                             return res.status(400).json({ message: 'Invalid status transition from published' });
                         }
                     } else if (['ongoing', 'completed'].includes(event.status)) {
-                        if (field === 'status' && !['completed', 'cancelled'].includes(req.body[field])) {
-                            return res.status(400).json({ message: 'Ongoing/Completed events can only be marked completed or cancelled' });
+                        if (field === 'status' && !['completed', 'closed'].includes(req.body[field])) {
+                            return res.status(400).json({ message: 'Ongoing/Completed events can only be marked completed or closed' });
                         }
                     }
                     event[field] = req.body[field];
@@ -432,8 +451,9 @@ const updateEvent = async (req, res) => {
         }
 
         if (req.body.customForm && event.registrationCount > 0) {
-            // Check if form changed
-            const formChanged = JSON.stringify(req.body.customForm) !== JSON.stringify(event.customForm);
+            // Compare ORIGINAL event form (before mutation) with request body
+            const originalEvent = await Event.findById(req.params.id);
+            const formChanged = JSON.stringify(req.body.customForm) !== JSON.stringify(originalEvent.customForm);
             if (formChanged) {
                 return res.status(400).json({ message: 'Custom form cannot be modified after the first registration' });
             }
@@ -532,6 +552,16 @@ const exportEventCSV = async (req, res) => {
             .populate('participant', 'firstName lastName email contactNumber');
 
         // Create CSV content
+        // Helper to escape CSV values and prevent formula injection
+        const escapeCSV = (value) => {
+            if (value === null || value === undefined) return '';
+            const str = String(value);
+            // Prefix with single quote if starts with formula-triggering characters
+            const sanitized = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+            // Escape quotes and wrap in quotes
+            return `"${sanitized.replace(/"/g, '""')}"`;
+        };
+
         let csvContent = 'Ticket ID,Name,Email,Contact,Status,Payment Status,Team Name,Registration Date,Attendance,Audit Note,Timestamp\n';
 
         registrations.forEach(reg => {
@@ -546,7 +576,7 @@ const exportEventCSV = async (req, res) => {
             const auditNote = reg.isManualOverride ? `Manual: ${reg.manualOverrideReason}` : (reg.attendanceMarked ? 'QR Scan' : '');
             const timestamp = reg.attendanceMarkedAt ? new Date(reg.attendanceMarkedAt).toLocaleTimeString() : '';
 
-            csvContent += `"${reg.ticketId}","${name}","${email}","${contact}","${status}","${paymentStatus}","${teamName}","${regDate}","${attendance}","${auditNote}","${timestamp}"\n`;
+            csvContent += `${escapeCSV(reg.ticketId)},${escapeCSV(name)},${escapeCSV(email)},${escapeCSV(contact)},${escapeCSV(status)},${escapeCSV(paymentStatus)},${escapeCSV(teamName)},${escapeCSV(regDate)},${escapeCSV(attendance)},${escapeCSV(auditNote)},${escapeCSV(timestamp)}\n`;
         });
 
         // Set headers for file download

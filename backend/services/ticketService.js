@@ -1,12 +1,14 @@
 const QRCode = require('qrcode');
+const crypto = require('crypto');
 
 /**
- * Generate a unique ticket ID
+ * Generate a unique ticket ID (collision-resistant)
  */
 const generateTicketId = (registrationId) => {
     const timestamp = Date.now();
-    const shortId = registrationId.toString().slice(-6).toUpperCase();
-    return `TKT-${timestamp}-${shortId}`;
+    const random = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const shortId = registrationId.toString().slice(-4).toUpperCase();
+    return `TKT-${timestamp}-${shortId}-${random}`;
 };
 
 /**

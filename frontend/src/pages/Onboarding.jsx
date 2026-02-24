@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import axios from '../api/axios';
@@ -116,7 +116,7 @@ const Onboarding = () => {
     };
 
     // Fetch organizers when category or search changes
-    useState(() => {
+    useEffect(() => {
         if (step === 3) {
             fetchOrganizers();
         }

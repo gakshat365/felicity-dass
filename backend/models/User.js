@@ -35,14 +35,7 @@ const userSchema = mongoose.Schema({
 
     // Shared fields
     followerCount: { type: Number, default: 0 }, // Denormalized for performance
-    isApproved: { type: Boolean, default: false }, // Default false for new organizers
-    approvalStatus: {
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
-    },
-    rejectionReason: { type: String },
-    status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+    status: { type: String, enum: ['active', 'suspended', 'archived'], default: 'active' },
 }, { timestamps: true });
 
 // Hash password before saving

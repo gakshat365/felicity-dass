@@ -8,7 +8,8 @@ const {
     upload,
     approvePayment,
     rejectPayment,
-    cancelRegistration
+    cancelRegistration,
+    markAttendanceByTicket
 } = require('../controllers/registrationController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
@@ -48,6 +49,12 @@ router.patch('/:id/reject-payment',
 router.patch('/:id/cancel',
     authorize('participant'),
     cancelRegistration
+);
+
+// Mark attendance by ticket ID (Organizer/Admin only)
+router.post('/event/:eventId/attendance',
+    authorize('organizer', 'admin'),
+    markAttendanceByTicket
 );
 
 module.exports = router;

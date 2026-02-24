@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -14,9 +14,10 @@ const STATUS_COLORS = {
 
 const MyEvents = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState(searchParams.get('filter') || 'all');
     const [search, setSearch] = useState('');
 
     useEffect(() => {
@@ -216,7 +217,7 @@ const MyEvents = () => {
                                     >
                                         Manage →
                                     </button>
-                                    {event.status === 'draft' && (
+                                    {['draft', 'published'].includes(event.status) && (
                                         <button
                                             onClick={() => navigate(`/events/edit/${event._id}`)}
                                             style={{ padding: '8px 14px', background: '#21262d', color: '#c9d1d9', border: '1px solid #30363d', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}

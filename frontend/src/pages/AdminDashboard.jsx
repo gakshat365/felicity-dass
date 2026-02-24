@@ -95,24 +95,12 @@ const AdminDashboard = () => {
 
     const handleApproveOrganizer = async (organizerId) => {
         try {
-            await axios.patch(`/admin/organizers/${organizerId}/approve`);
-            toast.success('Organizer approved successfully');
+            await axios.patch(`/admin/organizers/${organizerId}/status`, { status: 'active' });
+            toast.success('Organizer activated successfully');
             fetchDashboardData();
         } catch (error) {
-            console.error('Approve error:', error);
-            toast.error(error.response?.data?.message || 'Failed to approve organizer');
-        }
-    };
-
-    const handleRejectOrganizer = async (organizerId) => {
-        const reason = prompt('Enter rejection reason (optional):');
-        try {
-            await axios.patch(`/admin/organizers/${organizerId}/reject`, { reason });
-            toast.success('Organizer rejected');
-            fetchDashboardData();
-        } catch (error) {
-            console.error('Reject error:', error);
-            toast.error(error.response?.data?.message || 'Failed to reject organizer');
+            console.error('Activate error:', error);
+            toast.error(error.response?.data?.message || 'Failed to activate organizer');
         }
     };
 
@@ -120,11 +108,23 @@ const AdminDashboard = () => {
         const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
         try {
             await axios.patch(`/admin/organizers/${organizerId}/status`, { status: newStatus });
-            toast.success(`Organizer ${newStatus === 'active' ? 'activated' : 'suspended'}`);
+            toast.success(`Organizer ${newStatus === 'active' ? 'activated' : 'disabled'}`);
             fetchDashboardData();
         } catch (error) {
             console.error('Status toggle error:', error);
             toast.error('Failed to update organizer status');
+        }
+    };
+
+    const handleArchiveOrganizer = async (organizerId) => {
+        if (!window.confirm('Archive this organizer? They will not be able to log in.')) return;
+        try {
+            await axios.patch(`/admin/organizers/${organizerId}/status`, { status: 'archived' });
+            toast.success('Organizer archived');
+            fetchDashboardData();
+        } catch (error) {
+            console.error('Archive error:', error);
+            toast.error('Failed to archive organizer');
         }
     };
 
@@ -336,62 +336,46 @@ const AdminDashboard = () => {
                                             <td>{org.email}</td>
                                             <td>{org.category}</td>
                                             <td>
-                                                <span className={`status-badge status-${org.approvalStatus}`}>
-                                                    {org.approvalStatus}
+                                                <span className={`status-badge status-${org.status}`}>
+                                                    {org.status}
                                                 </span>
                                             </td>
                                             <td>{org.eventsCount || 0}</td>
                                             <td>{format(new Date(org.createdAt), 'MMM dd, yyyy')}</td>
                                             <td>
-                                                {org.approvalStatus === 'approved' ? (
-                                                    <div className="table-actions">
+                                                <div className="table-actions">
+                                                    {org.status === 'active' ? (
                                                         <button
                                                             onClick={() => handleToggleOrganizerStatus(org._id, org.status)}
-                                                            className={`btn btn-sm ${org.status === 'active' ? 'btn-warning' : 'btn-success'}`}
+                                                            className="btn btn-sm btn-warning"
                                                         >
-                                                            {org.status === 'active' ? 'Suspend' : 'Activate'}
+                                                            Disable
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleDeleteOrganizer(org._id)}
-                                                            className="btn btn-sm btn-danger"
-                                                            title="Delete Permanently"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
-                                                ) : org.approvalStatus === 'pending' ? (
-                                                    <div className="table-actions">
+                                                    ) : (
                                                         <button
                                                             onClick={() => handleApproveOrganizer(org._id)}
                                                             className="btn btn-sm btn-success"
                                                         >
-                                                            ✓ Approve
+                                                            Activate
                                                         </button>
+                                                    )}
+                                                    {org.status !== 'archived' && (
                                                         <button
-                                                            onClick={() => handleRejectOrganizer(org._id)}
-                                                            className="btn btn-sm btn-warning"
+                                                            onClick={() => handleArchiveOrganizer(org._id)}
+                                                            className="btn btn-sm btn-secondary"
+                                                            title="Archive"
                                                         >
-                                                            Reject
+                                                            📦
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleDeleteOrganizer(org._id)}
-                                                            className="btn btn-sm btn-danger"
-                                                            title="Delete"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="table-actions">
-                                                        <button
-                                                            onClick={() => handleDeleteOrganizer(org._id)}
-                                                            className="btn btn-sm btn-danger"
-                                                            title="Delete"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDeleteOrganizer(org._id)}
+                                                        className="btn btn-sm btn-danger"
+                                                        title="Delete Permanently"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

@@ -39,7 +39,7 @@ const eventSchema = mongoose.Schema({
     // Status
     status: {
         type: String,
-        enum: ['draft', 'published', 'ongoing', 'completed', 'cancelled'],
+        enum: ['draft', 'published', 'ongoing', 'completed', 'cancelled', 'closed'],
         default: 'draft'
     },
 
@@ -51,7 +51,7 @@ const eventSchema = mongoose.Schema({
         questionText: { type: String, required: true },
         questionType: {
             type: String,
-            enum: ['short', 'long', 'number', 'mcq-single', 'mcq-multiple'],
+            enum: ['short', 'long', 'number', 'mcq-single', 'mcq-multiple', 'file'],
             required: true
         },
         required: { type: Boolean, default: false },

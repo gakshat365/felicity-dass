@@ -103,13 +103,24 @@ const createRegistration = async (req, res) => {
             }
         }
 
-        // Validate custom form word counts
-        if (event.type === 'normal' && event.customForm && event.customForm.length > 0 && formResponses) {
+        // Validate custom form required fields and word counts
+        if (event.type === 'normal' && event.customForm && event.customForm.length > 0) {
+            // Validate required fields are present (even if formResponses is missing)
+            for (const field of event.customForm) {
+                const fieldLabel = field.label || field.questionText;
+                const isRequired = field.required !== false; // default to required if not specified
+                const response = formResponses ? formResponses[fieldLabel] : undefined;
+
+                if (isRequired && (response === undefined || response === null || response === '')) {
+                    return res.status(400).json({ message: `"${fieldLabel}" is a required field` });
+                }
+            }
+
             for (const field of event.customForm) {
                 const fieldType = field.type || field.questionType;
                 const fieldLabel = field.label || field.questionText;
 
-                const response = formResponses[fieldLabel];
+                const response = formResponses ? formResponses[fieldLabel] : undefined;
                 if (response && typeof response === 'string') {
                     const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
                     if ((fieldType === 'text' || fieldType === 'short') && wordCount > 50) {
@@ -591,6 +602,19 @@ const cancelRegistration = async (req, res) => {
  */
 const getEventRegistrations = async (req, res) => {
     try {
+        // Authorization: only the event's organizer or admin can view registrations
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        const isOrganizer = event.organizer.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isOrganizer && !isAdmin) {
+            return res.status(403).json({ message: 'Access denied. Only the event organizer or admin can view registrations.' });
+        }
+
         const registrations = await Registration.find({ event: req.params.id })
             .populate('participant', 'firstName lastName email')
             .sort({ createdAt: -1 });
@@ -602,56 +626,8 @@ const getEventRegistrations = async (req, res) => {
 };
 
 /**
- * Mark attendance for a registration (Organizer/Admin only)
- * POST /api/registrations/:id/mark-attendance
- */
-const markAttendance = async (req, res) => {
-    try {
-        const registration = await Registration.findById(req.params.id)
-            .populate('event');
-
-        if (!registration) {
-            return res.status(404).json({ message: 'Registration not found' });
-        }
-
-        // Check if user is organizer or admin
-        const isOrganizer = registration.event.organizer.toString() === req.user._id.toString();
-        const isAdmin = req.user.role === 'admin';
-
-        if (!isOrganizer && !isAdmin) {
-            return res.status(403).json({ message: 'Access denied' });
-        }
-
-        // Check if registration is confirmed
-        if (registration.status !== 'confirmed') {
-            return res.status(400).json({ message: 'Only confirmed registrations can mark attendance' });
-        }
-
-        // Check if already marked
-        if (registration.attendanceMarked) {
-            return res.status(400).json({ message: 'Attendance already marked' });
-        }
-
-        // Mark attendance
-        registration.attendanceMarked = true;
-        registration.attendanceStatus = 'Present';
-        registration.attendanceMarkedAt = new Date();
-        registration.attendanceMarkedBy = req.user._id;
-        await registration.save();
-
-        res.json({
-            message: 'Attendance marked successfully',
-            registration
-        });
-    } catch (error) {
-        console.error('Mark attendance error:', error);
-        res.status(500).json({ message: 'Failed to mark attendance' });
-    }
-};
-
-/**
  * Mark attendance by ticket ID or QR code (Organizer/Admin only)
- * POST /api/events/:eventId/mark-attendance
+ * POST /api/registrations/event/:eventId/attendance
  */
 const markAttendanceByTicket = async (req, res) => {
     try {
@@ -707,6 +683,7 @@ const markAttendanceByTicket = async (req, res) => {
 
         // Mark attendance
         registration.attendanceMarked = true;
+        registration.attendanceStatus = 'Present';
         registration.attendanceMarkedAt = new Date();
         registration.attendanceMarkedBy = req.user._id;
         await registration.save();
@@ -736,6 +713,5 @@ module.exports = {
     approvePayment,
     rejectPayment,
     cancelRegistration,
-    markAttendance,
     markAttendanceByTicket
 };

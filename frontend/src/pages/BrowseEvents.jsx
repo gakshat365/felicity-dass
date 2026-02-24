@@ -1,8 +1,9 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import EventCard from '../components/EventCard';
+import Fuse from 'fuse.js';
 import './BrowseEvents.css';
 
 const BrowseEvents = () => {
@@ -22,12 +23,21 @@ const BrowseEvents = () => {
         endDate: '',
         tags: 'all'
     });
+    const debounceTimer = useRef(null);
+
+    // Debounced fetch: waits 350ms after last filter change
+    useEffect(() => {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(() => {
+            fetchEvents();
+        }, 350);
+        return () => clearTimeout(debounceTimer.current);
+    }, [filters, followedOnly]);
 
     useEffect(() => {
-        fetchEvents();
         fetchTrending();
         fetchEndingSoon();
-    }, [filters, followedOnly]);
+    }, []);
 
     const fetchEvents = async () => {
         try {
@@ -45,7 +55,20 @@ const BrowseEvents = () => {
             else params.status = 'published,ongoing'; // show live events too
 
             const { data } = await axios.get('/events', { params });
-            setEvents(data);
+
+            // Apply client-side fuzzy search for better partial/fuzzy matching
+            if (filters.search && filters.search.trim()) {
+                const fuse = new Fuse(data, {
+                    keys: ['name', 'description', 'organizer.organizerName', 'tags'],
+                    threshold: 0.4,
+                    includeScore: true,
+                    ignoreLocation: true
+                });
+                const results = fuse.search(filters.search.trim());
+                setEvents(results.map(r => r.item));
+            } else {
+                setEvents(data);
+            }
         } catch (error) {
             console.error('Error fetching events:', error);
         } finally {
