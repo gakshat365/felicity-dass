@@ -7,6 +7,10 @@ const path = require('path');
 const { Server } = require("socket.io");
 require('dotenv').config();
 
+// Diagnostic: confirm env vars are loaded
+console.log('MONGO_URI set:', !!process.env.MONGO_URI);
+console.log('MONGO_URI starts with:', process.env.MONGO_URI?.substring(0, 20));
+
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
