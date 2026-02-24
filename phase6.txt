@@ -1,5 +1,0 @@
-1. Anonymous Feedback System
-Enable participants to submit anonymous feedback for events they have attended. Feedback
-7
-includes a star rating (1–5) and text-based comments. Organizers can view aggregated
-ratings, filter feedback by rating, view average ratings
