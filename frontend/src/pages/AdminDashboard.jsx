@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
@@ -8,10 +8,17 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+    const [loading, setLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get('tab') || 'overview');
+
+    useEffect(() => {
+        const tab = new URLSearchParams(location.search).get('tab') || 'overview';
+        setActiveTab(tab);
+    }, [location.search]);
+
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalOrganizers: 0,

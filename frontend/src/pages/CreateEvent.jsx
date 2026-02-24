@@ -181,7 +181,7 @@ const CreateEvent = () => {
             const response = await axios.post('/events', eventData);
 
             toast.success(`Event ${status === 'draft' ? 'saved as draft' : 'published'} successfully!`);
-            navigate(`/events/${response.data._id}`);
+            navigate(`/events/organizer/${response.data._id}`);
         } catch (error) {
             console.error('Create event error:', error);
             toast.error(error.response?.data?.message || 'Failed to create event');

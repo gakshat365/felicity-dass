@@ -33,7 +33,7 @@ const RegistrationModal = ({ event, onClose, onSuccess }) => {
                 merchandiseDetails: event.type === 'merchandise' ? merchandiseDetails : undefined
             };
 
-            const response = await axios.post('/api/registrations', registrationData);
+            const response = await axios.post('/registrations', registrationData);
 
             toast.success('Registration successful! Check your email for the ticket.');
 

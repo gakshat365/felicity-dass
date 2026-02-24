@@ -44,9 +44,9 @@ const EventCard = ({ event }) => {
             </div>
 
             <p className="event-description">
-                {event.description.length > 150
+                {(event.description || '').length > 150
                     ? `${event.description.substring(0, 150)}...`
-                    : event.description}
+                    : (event.description || 'No description available.')}
             </p>
 
             <div className="event-meta">

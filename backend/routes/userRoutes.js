@@ -21,8 +21,8 @@ router.get('/profile-completion', protect, getProfileCompletion);
 router.post('/onboarding', protect, saveOnboarding);
 
 // Organizers (for following feature)
-router.get('/organizers', protect, getOrganizers);
-router.get('/organizers/:id', getOrganizerById); // Public View
+router.get('/organizers', getOrganizers);           // Public
+router.get('/organizers/:id', getOrganizerById);    // Public
 router.post('/follow/:organizerId', protect, toggleFollow);
 router.post('/test-webhook', protect, testWebhook);
 

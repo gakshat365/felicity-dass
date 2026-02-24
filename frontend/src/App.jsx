@@ -95,19 +95,11 @@ function App() {
           />
           <Route
             path="/organizers"
-            element={
-              <ProtectedRoute allowedRoles={['participant']}>
-                <OrganizersList />
-              </ProtectedRoute>
-            }
+            element={<OrganizersList />}
           />
           <Route
             path="/organizers/:id"
-            element={
-              <ProtectedRoute allowedRoles={['participant']}>
-                <OrganizerProfile />
-              </ProtectedRoute>
-            }
+            element={<OrganizerProfile />}
           />
           <Route path="/events" element={<BrowseEvents />} />
           <Route path="/events/:id" element={<EventDetails />} />

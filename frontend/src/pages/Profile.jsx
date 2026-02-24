@@ -257,30 +257,31 @@ const Profile = () => {
                                                 onChange={handleChange}
                                                 disabled={!editing}
                                             />
-                                            <div className="form-group">
-                                                <label className="form-label">Contact Number</label>
-                                                <input
-                                                    type="tel"
-                                                    name="contactNumber"
-                                                    className="form-input"
-                                                    value={formData.contactNumber}
-                                                    onChange={handleChange}
-                                                    disabled={!editing}
-                                                />
-                                            </div>
                                         </div>
-
-                                        <div className="webhook-input-group">
+                                        <div className="form-group">
+                                            <label className="form-label">Contact Number</label>
                                             <input
-                                                type="url"
-                                                name="discordWebhookUrl"
+                                                type="tel"
+                                                name="contactNumber"
                                                 className="form-input"
-                                                placeholder="https://discord.com/api/webhooks/..."
-                                                value={formData.discordWebhookUrl}
+                                                value={formData.contactNumber}
                                                 onChange={handleChange}
                                                 disabled={!editing}
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Discord Webhook URL</label>
+                                        <input
+                                            type="url"
+                                            name="discordWebhookUrl"
+                                            className="form-input"
+                                            placeholder="https://discord.com/api/webhooks/..."
+                                            value={formData.discordWebhookUrl}
+                                            onChange={handleChange}
+                                            disabled={!editing}
+                                        />
                                         <span className="helper-text">Auto-post new events to your Discord channel</span>
                                     </div>
                                 </>

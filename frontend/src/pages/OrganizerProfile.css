@@ -8,12 +8,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #ffffff;
+    background: #161b22;
     padding: 2.5rem;
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
     margin-bottom: 2rem;
-    border: 1px solid #e1e4e8;
+    border: 1px solid #30363d;
 }
 
 .profile-info {
@@ -22,13 +22,13 @@
 
 .profile-info h1 {
     font-size: 2.2rem;
-    color: #1a202c;
+    color: #f0f6fc;
     margin: 0.5rem 0;
 }
 
 .profile-info .description {
     font-size: 1.1rem;
-    color: #4a5568;
+    color: #8b949e;
     margin-bottom: 1rem;
     line-height: 1.6;
 }
@@ -38,7 +38,7 @@
 }
 
 .contact-info a {
-    color: #3182ce;
+    color: #58a6ff;
     text-decoration: none;
     font-weight: 500;
 }
@@ -49,15 +49,15 @@
 
 .follower-stats {
     font-size: 0.95rem;
-    color: #718096;
+    color: #8b949e;
     margin-top: 0.5rem;
 }
 
 .follow-action-btn {
     padding: 0.75rem 1.5rem;
-    border: 1px solid #3182ce;
+    border: 1px solid rgba(56, 139, 253, 0.4);
     background-color: transparent;
-    color: #3182ce;
+    color: #58a6ff;
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
@@ -66,19 +66,19 @@
 }
 
 .follow-action-btn.following {
-    background-color: #3182ce;
-    color: white;
+    background-color: rgba(56, 139, 253, 0.15);
+    color: #58a6ff;
 }
 
 .follow-action-btn:hover:not(.following) {
-    background-color: #ebf8ff;
+    background-color: rgba(56, 139, 253, 0.1);
 }
 
 .profile-content h2 {
     font-size: 1.8rem;
-    color: #2d3748;
+    color: #c9d1d9;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #30363d;
     padding-bottom: 0.5rem;
 }
 
@@ -93,10 +93,11 @@
 }
 
 .empty-state {
-    color: #a0aec0;
+    color: #8b949e;
     font-size: 1.1rem;
     text-align: center;
     padding: 2rem;
-    background: #f7fafc;
+    background: #161b22;
+    border: 1px solid #30363d;
     border-radius: 8px;
 }

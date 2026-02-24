@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const OrganizerProfile = () => {
     const { id } = useParams();
-    const { user, setUser } = useContext(AuthContext);
+    const { user, updateUserProfile } = useContext(AuthContext);
     const [organizer, setOrganizer] = useState(null);
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -35,14 +35,17 @@ const OrganizerProfile = () => {
     };
 
     const handleFollowToggle = async () => {
-        if (!user || user.role !== 'participant') {
+        if (!user) {
+            toast.error('Please log in to follow clubs');
+            return;
+        }
+        if (user.role !== 'participant') {
             toast.error('Only participants can follow clubs');
             return;
         }
-
         try {
             const { data } = await axios.post(`/users/follow/${id}`);
-            setUser(data.user);
+            updateUserProfile(data.user);
             setOrganizer(prev => ({
                 ...prev,
                 followerCount: data.action === 'followed' ? prev.followerCount + 1 : prev.followerCount - 1
@@ -75,7 +78,11 @@ const OrganizerProfile = () => {
                         👤 {organizer.followerCount || 0} Followers
                     </div>
                 </div>
-                {user?.role === 'participant' && (
+                {!user ? (
+                    <button className="follow-action-btn" onClick={() => toast.error('Please log in to follow clubs')}>
+                        + Follow
+                    </button>
+                ) : user?.role === 'participant' && (
                     <button
                         className={`follow-action-btn ${isFollowing ? 'following' : ''}`}
                         onClick={handleFollowToggle}

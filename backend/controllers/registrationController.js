@@ -168,7 +168,7 @@ const createRegistration = async (req, res) => {
             paymentRequired: event.registrationFee > 0,
             paymentAmount: event.registrationFee || 0,
             status: event.registrationFee > 0 ? 'pending' : 'confirmed',
-            ticketId: 'TEMP' // Will be updated after save
+            ticketId: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 9)}` // Unique placeholder; updated after save
         });
 
         // Save to get ID

@@ -30,7 +30,7 @@ const ProfileBanner = () => {
 
     const fetchProfileCompletion = async () => {
         try {
-            const { data } = await axios.get('/api/users/profile-completion');
+            const { data } = await axios.get('/users/profile-completion');
             setCompleteness(data.completeness);
             setMissingFields(data.missingFields);
 

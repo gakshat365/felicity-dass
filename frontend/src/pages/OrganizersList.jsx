@@ -6,7 +6,8 @@ import toast from 'react-hot-toast';
 import './OrganizersList.css';
 
 const OrganizersList = () => {
-    const { user, setUser } = useContext(AuthContext);
+    const { user, updateUserProfile } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [organizers, setOrganizers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -33,9 +34,17 @@ const OrganizersList = () => {
     };
 
     const handleFollowToggle = async (organizerId) => {
+        if (!user) {
+            toast.error('Please log in to follow clubs');
+            return;
+        }
+        if (user.role !== 'participant') {
+            toast.error('Only participants can follow clubs');
+            return;
+        }
         try {
             const { data } = await axios.post(`/users/follow/${organizerId}`);
-            setUser(data.user);
+            updateUserProfile(data.user);
             toast.success(data.action === 'followed' ? 'Following club!' : 'Unfollowed club');
 
             // Update local state to show updated follower count or status if needed

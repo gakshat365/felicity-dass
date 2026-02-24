@@ -13,6 +13,7 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
     const [replyTo, setReplyTo] = useState(null); // { id, name }
     const [loading, setLoading] = useState(true);
     const [isPinnedOnly, setIsPinnedOnly] = useState(false);
+    const [notAllowed, setNotAllowed] = useState(false);
     const socketRef = useRef();
     const messagesEndRef = useRef();
 
@@ -62,8 +63,11 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
             const { data } = await axios.get(`/forum/${eventId}`);
             setMessages(data);
         } catch (error) {
-            console.error('Forum fetch error:', error);
-            toast.error('Registered users only forum');
+            if (error.response?.status === 403) {
+                setNotAllowed(true);
+            } else {
+                console.error('Forum fetch error:', error);
+            }
         } finally {
             setLoading(false);
         }
@@ -140,6 +144,15 @@ const DiscussionForum = ({ eventId, eventOrganizerId }) => {
     };
 
     if (loading) return <div className="forum-loading">Entering Forum...</div>;
+
+    if (notAllowed) return (
+        <div className="forum-container">
+            <div className="forum-header"><h3>Forum & Announcements</h3></div>
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#8b949e' }}>
+                <p>🔒 Register for this event to join the discussion.</p>
+            </div>
+        </div>
+    );
 
     const isOrganizer = user._id === eventOrganizerId || user.role === 'admin';
     const filteredMessages = isPinnedOnly ? messages.filter(m => m.isPinned) : messages;

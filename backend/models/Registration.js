@@ -120,7 +120,7 @@ const registrationSchema = new mongoose.Schema({
 
 // Index for faster queries
 registrationSchema.index({ participant: 1, event: 1 });
-registrationSchema.index({ ticketId: 1 });
+// Note: ticketId already has index via unique:true in schema field definition
 registrationSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Registration', registrationSchema);
